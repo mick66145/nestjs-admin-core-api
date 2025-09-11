@@ -9,6 +9,10 @@ import { PrismaModule } from './_libs/prisma/prisma.module';
 import { JwtConfigInterface } from './_libs/auth/jwt-config.interface';
 import { AppController } from './app.controller';
 import { UserAccountModule } from './user-account/user-account.module';
+import { VerificationModule } from './verification/verification.module';
+import { UserModule } from './user/user.module';
+import { RoleModule } from './role/role.module';
+import { PermissionModule } from './libs/permission/permission.module';
 
 @Module({
   imports: [
@@ -19,7 +23,6 @@ import { UserAccountModule } from './user-account/user-account.module';
     // ScheduleModule.forRoot(), // ref: https://docs.nestjs.com/techniques/task-scheduling
     LoggerModule,
     PrismaModule,
-    UserAccountModule,
     JwtModule.registerAsync({
       global: true,
       useFactory: (configService: ConfigService) => {
@@ -32,6 +35,11 @@ import { UserAccountModule } from './user-account/user-account.module';
       },
       inject: [ConfigService],
     }),
+    PermissionModule,
+    UserAccountModule,
+    VerificationModule,
+    UserModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [],
