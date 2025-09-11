@@ -1,0 +1,59 @@
+import { ApiProperty } from '@nestjs/swagger';
+import * as $Prisma from '@prisma/client';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { ApiSchema } from 'src/_libs/swagger/api-schema';
+import { AccountType } from 'src/user-account/user-account.interface';
+
+@ApiSchema({ prefix: 'ProfileEntity' })
+@Exclude()
+export class UserAccountEntity {
+  @ApiProperty({ example: 1 })
+  @Expose()
+  id!: number;
+
+  @ApiProperty({ example: 'account' })
+  @Expose()
+  account!: string;
+
+  @ApiProperty({ enum: AccountType })
+  @Expose()
+  type!: AccountType;
+}
+
+@Exclude()
+export class ProfileEntity implements $Prisma.User {
+  @ApiProperty()
+  @Expose()
+  createdAt!: Date;
+
+  @ApiProperty()
+  @Expose()
+  updatedAt!: Date;
+
+  @ApiProperty({ description: '會員名稱', example: '會員名稱' })
+  @Expose()
+  name!: string;
+
+  @ApiProperty({ description: '手機', example: '0912345678' })
+  @Expose()
+  phone!: string;
+
+  @ApiProperty({ description: 'Email', example: 'example@mail.com' })
+  @Expose()
+  email!: string;
+
+  @ApiProperty({ description: '是否已驗證' })
+  @Expose()
+  isValid!: boolean;
+
+  isEnabled!: boolean;
+
+  isRoot!: boolean;
+
+  userAccountId!: number;
+
+  @ApiProperty({ type: UserAccountEntity })
+  @Expose()
+  @Type(() => UserAccountEntity)
+  userAccount!: UserAccountEntity;
+}
