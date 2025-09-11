@@ -1,10 +1,12 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 // import { ScheduleModule } from '@nestjs/schedule';
 import { configLoads } from './config';
 import { LoggerModule } from './_libs/logger/logger.module';
 import { LoggerMiddleware } from './_libs/logger/logger.middleware';
 import { PrismaModule } from './_libs/prisma/prisma.module';
+import { JwtConfigInterface } from './_libs/auth/jwt-config.interface';
 import { AppController } from './app.controller';
 import { UserAccountModule } from './user-account/user-account.module';
 
@@ -18,6 +20,18 @@ import { UserAccountModule } from './user-account/user-account.module';
     LoggerModule,
     PrismaModule,
     UserAccountModule,
+    JwtModule.registerAsync({
+      global: true,
+      useFactory: (configService: ConfigService) => {
+        const jwt = configService.getOrThrow<JwtConfigInterface>('jwt');
+
+        return {
+          secret: jwt.secret,
+          signOptions: { expiresIn: jwt.expires },
+        };
+      },
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [],
