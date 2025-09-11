@@ -5,8 +5,8 @@ import { configLoads } from './config';
 import { LoggerModule } from './_libs/logger/logger.module';
 import { LoggerMiddleware } from './_libs/logger/logger.middleware';
 import { PrismaModule } from './_libs/prisma/prisma.module';
-import { PostModule } from './_examples/post/post.module';
 import { AppController } from './app.controller';
+import { UserAccountModule } from './user-account/user-account.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { AppController } from './app.controller';
     // ScheduleModule.forRoot(), // ref: https://docs.nestjs.com/techniques/task-scheduling
     LoggerModule,
     PrismaModule,
-    PostModule,
+    UserAccountModule,
   ],
   controllers: [AppController],
   providers: [],

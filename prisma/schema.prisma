@@ -30,3 +30,163 @@ model Post {
 
   @@map("post")
 }
+
+// **********
+// Auth
+// **********
+model UserAccount {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  type        String
+  account     String
+  password    String    @default("")
+  lastLoginAt DateTime? @map("last_login_at")
+
+  verifications            Verification[]
+  sendSmsLogs              SendSmsLog[]
+  sendMailLogs             SendMailLog[]
+  userAccountHasRole       UserAccountHasRole[]
+  userAccountHasPermission UserAccountHasPermission[]
+
+  // member            Member?
+  // verifyToken       VerifyToken[]
+  user        User[]
+  verifyToken VerifyToken[]
+
+  @@map("user_account")
+}
+
+model Verification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  code     String
+  isValid  Boolean   @default(true) @map("is_valid")
+  expireAt DateTime  @map("expire_at")
+  usedAt   DateTime? @map("used_at")
+
+  userAccountId Int         @map("user_account_id")
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("verification")
+}
+
+model SendSmsLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subject     String
+  destination String
+  sendTime    String @map("send_time")
+  result      String
+
+  userAccountId Int         @map("user_account_id")
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("send_sms_log")
+}
+
+model SendMailLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subject String
+  to      String
+
+  userAccountId Int         @map("user_account_id")
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("send_mail_log")
+}
+
+// **********
+// Member
+// **********
+model User {
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  name      String
+  phone     String   @unique
+  email     String   @unique
+  isValid   Boolean  @default(false) @map("is_valid")
+  isEnabled Boolean  @default(true) @map("is_enabled")
+  isRoot    Boolean  @default(false) @map("is_root")
+
+  userAccountId Int         @map("user_account_id")
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@id([userAccountId])
+  @@map("user")
+}
+
+model VerifyToken {
+  type  String
+  token String
+
+  userAccountId Int         @map("user_account_id")
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@id([userAccountId, type, token])
+  @@unique([type, token])
+  @@map("verify_token")
+}
+
+// **********
+// Role
+// **********
+model Role {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+  name      String
+  isEnabled Boolean   @default(true) @map("is_enabled")
+
+  userAccountHasRole UserAccountHasRole[]
+  roleHasPermission  RoleHasPermission[]
+
+  @@map("role")
+}
+
+model RoleHasPermission {
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  permission String
+
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int  @map("role_id")
+
+  @@id([roleId, permission])
+  @@map("role_has_permission")
+}
+
+model UserAccountHasRole {
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  userAccountId Int @map("user_account_id")
+  roleId        Int @map("role_id")
+
+  userAccount UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  role        Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userAccountId, roleId])
+  @@map("user_account_has_role")
+}
+
+model UserAccountHasPermission {
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  permission String
+
+  userAccountId Int         @map("user_account_id")
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@id([userAccountId, permission])
+  @@map("user_account_has_permission")
+}
