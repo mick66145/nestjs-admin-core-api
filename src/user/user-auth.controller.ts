@@ -35,7 +35,10 @@ import {
 } from './dto/forget-password.dto';
 import { TokenEntity } from './entities/token.entity';
 import { RegisterEntity } from './entities/register.entity';
-import { ProfileEntity } from './entities/profile.entity';
+import {
+  ProfileEntity,
+  UserRolePermissionEntity,
+} from './entities/profile.entity';
 import { UseAuth } from './decorators/use-auth.decorator';
 import {
   ForgetPasswordEntity,
@@ -420,5 +423,17 @@ export class UserAuthController {
     await this.verifyTokenService.delete({
       type_token: { token, type: VerifyType.FORGET_PASSWORD_RESET },
     });
+  }
+
+  @ApiOperation({ summary: '取得登入者權限' })
+  @UseAuth()
+  @ApiOkResponse({ type: UserRolePermissionEntity })
+  @Get('permission')
+  async getPermissions(@AuthData() authData: AuthDataConfig) {
+    const {
+      payload: { sub },
+    } = authData;
+
+    return this.userService.getRolePermissions(parseInt(sub));
   }
 }

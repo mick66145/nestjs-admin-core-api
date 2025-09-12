@@ -11,6 +11,12 @@ export class UserRoleService {
     private readonly userAccountService: UserAccountService,
   ) {}
 
+  async getRole(userAccountId: number) {
+    return this.prisma.role.findMany({
+      where: { userAccountHasRole: { some: { userAccountId } } },
+    });
+  }
+
   async updateRole(updateUserRoleDto: UpdateUserRoleDto) {
     const { userAccountId, role } = updateUserRoleDto;
 

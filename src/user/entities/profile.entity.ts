@@ -57,3 +57,36 @@ export class ProfileEntity implements $Prisma.User {
   @Type(() => UserAccountEntity)
   userAccount!: UserAccountEntity;
 }
+
+@ApiSchema({ prefix: 'UserRolePermissionEntity' })
+@Exclude()
+export class RoleEntity {
+  @ApiProperty({ description: '角色ID', example: 1 })
+  @Expose()
+  id!: number;
+
+  @ApiProperty({ description: '角色名稱', example: '管理員' })
+  @Expose()
+  name!: string;
+}
+
+@ApiSchema({ prefix: 'UserRolePermissionEntity' })
+@Exclude()
+export class PermissionEntity {
+  @ApiProperty({ description: '權限名稱', example: 'MEMBER__VIEW' })
+  @Expose()
+  name!: string;
+}
+
+@Exclude()
+export class UserRolePermissionEntity {
+  @ApiProperty({ type: RoleEntity, isArray: true })
+  @Expose()
+  @Type(() => RoleEntity)
+  roles!: RoleEntity[];
+
+  @ApiProperty({ type: PermissionEntity, isArray: true })
+  @Expose()
+  @Type(() => PermissionEntity)
+  permissions!: PermissionEntity[];
+}
