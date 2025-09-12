@@ -59,20 +59,10 @@ export class UserController {
   @ApiOkResponse({ type: UserEntity })
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    const { role, phone, email } = createUserDto;
+    const { role } = createUserDto;
 
     // 檢查角色
     await this.roleService.existsOrThrow({ id: role.id, deletedAt: null });
-
-    // 檢查手機跟信箱是否唯一
-    const checkPhoneEmail = async () => {
-      const user = await this.userService.findAll({
-        where: { OR: [{ phone }, { email }] },
-      });
-
-      abortIf(user.length > 0, '此手機或信箱已被使用');
-    };
-    await checkPhoneEmail();
 
     return plainToInstance(
       UserEntity,
@@ -84,18 +74,6 @@ export class UserController {
   @ApiOkResponse({ type: UserEntity })
   @Post('root')
   async createRoot(@Body() dto: CreateRootUserDto) {
-    const { phone, email } = dto;
-
-    // 檢查手機跟信箱是否唯一
-    const checkPhoneEmail = async () => {
-      const user = await this.userService.findAll({
-        where: { OR: [{ phone }, { email }] },
-      });
-
-      abortIf(user.length > 0, '此手機或信箱已被使用');
-    };
-    await checkPhoneEmail();
-
     return plainToInstance(
       UserEntity,
       await this.userService.createRoot(dto, this.defaultInclude),
@@ -164,7 +142,7 @@ export class UserController {
     @Param('userAccountId', ParseIntPipe) userAccountId: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const { phone, email, role } = updateUserDto;
+    const { role } = updateUserDto;
 
     const where: Prisma.UserWhereUniqueInput = {
       userAccountId,
@@ -175,20 +153,6 @@ export class UserController {
     if (role) {
       await this.roleService.existsOrThrow({ id: role.id, deletedAt: null });
     }
-
-    // 檢查手機跟信箱是否唯一
-    const checkPhoneEmail = async () => {
-      const user = await this.userService.findAll({
-        where: {
-          userAccountId: { not: userAccountId },
-          OR: [{ phone }, { email }],
-        },
-      });
-
-      abortIf(user.length > 0, '此手機或信箱已被使用');
-    };
-
-    await checkPhoneEmail();
 
     return plainToInstance(
       UserEntity,

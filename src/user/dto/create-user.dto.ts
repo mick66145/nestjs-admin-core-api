@@ -40,12 +40,12 @@ export class CreateUserDto {
   @ApiPropertyOptional({ description: '手機', example: '0912345678' })
   @IsOptional()
   @IsString()
-  phone!: string;
+  phone?: string;
 
   @ApiPropertyOptional({ description: 'Email', example: 'example@mail.com' })
   @IsOptional()
   @IsEmail()
-  email!: string;
+  email?: string;
 
   @IsBoolean()
   isValid: boolean = true;
