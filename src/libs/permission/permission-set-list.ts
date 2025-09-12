@@ -27,7 +27,7 @@ export type PermissionSet = {
 export const PermissionSetList: PermissionSet[] = [
   {
     featureName: 'member',
-    displayName: '會員管理',
+    displayName: '管理員管理',
     permission: [
       PermissionAction.VIEW,
       PermissionAction.CREATE,

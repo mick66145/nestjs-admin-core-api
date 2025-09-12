@@ -55,7 +55,7 @@ export class UserController {
     };
   }
 
-  @ApiOperation({ summary: '建立會員資料' })
+  @ApiOperation({ summary: '建立管理員資料' })
   @ApiOkResponse({ type: UserEntity })
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -80,7 +80,7 @@ export class UserController {
     );
   }
 
-  @ApiOperation({ summary: '建立根帳號會員資料' })
+  @ApiOperation({ summary: '建立根帳號管理員資料' })
   @ApiOkResponse({ type: UserEntity })
   @Post('root')
   async createRoot(@Body() dto: CreateRootUserDto) {
@@ -102,7 +102,7 @@ export class UserController {
     );
   }
 
-  @ApiOperation({ summary: '取得所有會員資料' })
+  @ApiOperation({ summary: '取得所有管理員資料' })
   @ApiDataListResponse(UserEntity)
   @Get()
   async findAll(@Query() query: FindAllQueryDto) {
@@ -141,7 +141,7 @@ export class UserController {
     return new ResourceListEntity(plainToInstance(UserEntity, result), meta);
   }
 
-  @ApiOperation({ summary: '取得單一會員資料' })
+  @ApiOperation({ summary: '取得單一管理員資料' })
   @ApiOkResponse({ type: UserEntity })
   @Get(':userAccountId')
   async findOne(@Param('userAccountId', ParseIntPipe) userAccountId: number) {
@@ -157,7 +157,7 @@ export class UserController {
     );
   }
 
-  @ApiOperation({ summary: '修改會員資料' })
+  @ApiOperation({ summary: '修改管理員資料' })
   @ApiOkResponse({ type: UserEntity })
   @Patch(':userAccountId')
   async update(
@@ -196,7 +196,7 @@ export class UserController {
     );
   }
 
-  @ApiOperation({ summary: '刪除會員資料' })
+  @ApiOperation({ summary: '刪除管理員資料' })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':userAccountId')
   async remove(@Param('userAccountId', ParseIntPipe) userAccountId: number) {
@@ -209,7 +209,7 @@ export class UserController {
     await this.userService.remove(where);
   }
 
-  @ApiOperation({ summary: '重置會員密碼' })
+  @ApiOperation({ summary: '重置管理員密碼' })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post(':userAccountId/action/reset-password')
   async resetPassword(

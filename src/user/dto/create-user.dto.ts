@@ -31,7 +31,7 @@ export class CreateUserDto {
   @IsString()
   password!: string;
 
-  @ApiProperty({ description: '會員名稱', example: '會員名稱' })
+  @ApiProperty({ description: '管理員名稱', example: '管理員名稱' })
   @IsNotEmpty()
   @IsString()
   name!: string;

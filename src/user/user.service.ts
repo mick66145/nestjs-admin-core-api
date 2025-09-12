@@ -9,7 +9,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { abort } from 'src/_libs/api-response/abort.util';
 import { dealWithPrismaClientError } from 'src/libs/prisma/client-error';
 
-const entityName = '會員';
+const entityName = '管理員';
 
 @Injectable()
 export class UserService {
@@ -133,7 +133,7 @@ export class UserService {
     });
 
     if (user === null) {
-      abort('找無此會員', HttpStatus.NOT_FOUND);
+      abort('找無此管理員', HttpStatus.NOT_FOUND);
     }
 
     return user;
@@ -190,7 +190,7 @@ export class UserService {
     const user = await this.prisma.user.findUnique({ where });
 
     if (user === null) {
-      abort('找無此會員', HttpStatus.NOT_FOUND);
+      abort('找無此管理員', HttpStatus.NOT_FOUND);
     }
 
     return await this.userAccountService
@@ -209,7 +209,7 @@ export class UserService {
     const isExists = await this.prisma.user.exists({ where });
 
     if (!isExists) {
-      abort('找無此會員', HttpStatus.NOT_FOUND);
+      abort('找無此管理員', HttpStatus.NOT_FOUND);
     }
 
     return isExists;

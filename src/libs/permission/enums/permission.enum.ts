@@ -1,9 +1,9 @@
 export const Permission = {
-  // 會員管理
-  MEMBER__VIEW: 'MEMBER__VIEW',
-  MEMBER__CREATE: 'MEMBER__CREATE',
-  MEMBER__UPDATE: 'MEMBER__UPDATE',
-  MEMBER__DELETE: 'MEMBER__DELETE',
+  // 管理員管理
+  USER__VIEW: 'USER__VIEW',
+  USER__CREATE: 'USER__CREATE',
+  USER__UPDATE: 'USER__UPDATE',
+  USER__DELETE: 'USER__DELETE',
 
   // 角色管理
   ROLE__VIEW: 'ROLE__VIEW',

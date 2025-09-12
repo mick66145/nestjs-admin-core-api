@@ -3,7 +3,7 @@ import { IsEmail, IsString } from 'class-validator';
 import { Sometimes } from 'src/_libs/validator/sometimes.decorator';
 
 export class UpdateProfileDto {
-  @ApiPropertyOptional({ description: '會員名稱', example: '會員名稱' })
+  @ApiPropertyOptional({ description: '管理員名稱', example: '管理員名稱' })
   @Sometimes()
   @IsString()
   name?: string;

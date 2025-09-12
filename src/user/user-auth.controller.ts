@@ -55,9 +55,9 @@ export class UserAuthController {
     private readonly verifyTokenService: VerifyTokenService,
   ) {}
 
-  // @ApiOperation({ summary: '會員註冊' })
-  // @ApiOkResponse({ type: RegisterEntity })
-  // @Post('register')
+  @ApiOperation({ summary: '管理員註冊' })
+  @ApiOkResponse({ type: RegisterEntity })
+  @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     const { account } = registerDto;
 
@@ -66,7 +66,7 @@ export class UserAuthController {
     // 1. 檢查帳號是否已存在
     await this.userAuthService.checkAccountExists(account);
 
-    // 2. 建立會員
+    // 2. 建立管理員
     const user = await this.userAuthService.registerWithVerification({
       ...registerDto,
       orgId,
@@ -90,9 +90,9 @@ export class UserAuthController {
     });
   }
 
-  // @ApiOperation({ summary: '重新發送註冊驗證碼' })
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @Post('resend-register-code')
+  @ApiOperation({ summary: '重新發送註冊驗證碼' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('resend-register-code')
   async resendRegisterCode(@Body() resendVerifyDto: ResendVerifyDto) {
     const { token } = resendVerifyDto;
 
@@ -110,9 +110,9 @@ export class UserAuthController {
     });
   }
 
-  // @ApiOperation({ summary: '驗證註冊驗證碼' })
-  // @ApiOkResponse({ type: TokenEntity })
-  // @Post('verify')
+  @ApiOperation({ summary: '驗證註冊驗證碼' })
+  @ApiOkResponse({ type: TokenEntity })
+  @Post('verify')
   async verify(@Body() verifyDto: VerifyDto) {
     const { token: verifyToken } = verifyDto;
 
@@ -122,13 +122,13 @@ export class UserAuthController {
       type: VerifyType.REGISTER,
     });
 
-    // 2. 取得會員資訊
+    // 2. 取得管理員資訊
     const user = await this.userAuthService.findUserByVerifyTokenOrThrow(
       verifyToken,
       VerifyType.REGISTER,
     );
 
-    // 3. 更新會員資訊
+    // 3. 更新管理員資訊
     await this.userService.update(
       { userAccountId: user.userAccountId },
       {
@@ -144,13 +144,13 @@ export class UserAuthController {
     return this.userAuthService.getTokenEntity(token);
   }
 
-  @ApiOperation({ summary: '會員登入' })
+  @ApiOperation({ summary: '管理員登入' })
   @ApiOkResponse({ type: TokenEntity })
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     const { account, password } = loginDto;
 
-    // 1. 取得會員資訊，並檢查會員是否啟用
+    // 1. 取得管理員資訊，並檢查管理員是否啟用
     const getUser = async () => {
       try {
         return await this.userService.findByAccountOrThrow({
@@ -164,7 +164,7 @@ export class UserAuthController {
     const user = await getUser();
 
     if (!user.isEnabled) {
-      abort('會員尚未啟用，無法登入', HttpStatus.FORBIDDEN);
+      abort('管理員尚未啟用，無法登入', HttpStatus.FORBIDDEN);
     }
 
     // 2. 登入驗證
@@ -186,7 +186,7 @@ export class UserAuthController {
   // async thirdPartyLogin(@Body() thirdPartyLoginDto: ThirdPartyLoginDto) {
   //   const orgId = 0;
 
-  //   // 1. 建立會員
+  //   // 1. 建立管理員
   //   const user = await this.userAuthService.thirdPartyLogin({
   //     ...thirdPartyLoginDto,
   //     orgId,
@@ -287,7 +287,7 @@ export class UserAuthController {
   ) {
     const { method, target } = forgetPasswordTokenDto;
 
-    // 1. 驗證會員資料
+    // 1. 驗證管理員資料
     const targetWhere = () => {
       if (method === ForgetPasswordSendMethod.EMAIL) {
         return { email: target };

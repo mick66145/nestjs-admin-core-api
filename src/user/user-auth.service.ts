@@ -56,7 +56,7 @@ export class UserAuthService {
   }
 
   /**
-   * 註冊會員(需進行驗證)
+   * 註冊管理員(需進行驗證)
    */
   async registerWithVerification(registerWithOrgIdDto: RegisterWithOrgIdDto) {
     const { account, password, name, phone, email } = registerWithOrgIdDto;
@@ -74,7 +74,7 @@ export class UserAuthService {
 
         const userAccount = await getUser(account);
 
-        // 2. 建立會員
+        // 2. 建立管理員
         const data: Prisma.UserCreateInput = {
           phone,
           email,
@@ -105,13 +105,13 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('會員建立失敗', err);
+      this.logger.error('管理員建立失敗', err);
       throw err;
     }
   }
 
   /**
-   * 註冊會員(無需驗證)
+   * 註冊管理員(無需驗證)
    */
   register(registerWithOrgIdDto: RegisterWithOrgIdDto) {
     const { account, password, name, phone, email } = registerWithOrgIdDto;
@@ -129,7 +129,7 @@ export class UserAuthService {
 
         const userAccount = await getUser(account);
 
-        // 2. 建立會員
+        // 2. 建立管理員
         const data: Prisma.UserCreateInput = {
           phone,
           email,
@@ -143,7 +143,7 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('會員建立失敗', err);
+      this.logger.error('管理員建立失敗', err);
       throw err;
     }
   }
@@ -165,7 +165,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此會員');
+      abort('找無此管理員');
     }
 
     // 2. 生成驗證碼
@@ -200,10 +200,10 @@ export class UserAuthService {
       let subject = '';
       switch (verifyType) {
         case 'register':
-          subject = `會員註冊驗證碼`;
+          subject = `管理員註冊驗證碼`;
           break;
         case 'forgetPassword':
-          subject = `會員忘記密碼驗證碼`;
+          subject = `管理員忘記密碼驗證碼`;
           break;
         default:
           abort('無效的驗證類型');
@@ -379,7 +379,7 @@ export class UserAuthService {
   //       // 1. 取得或建立帳號
   //       const user = await getUser();
 
-  //       // 2. 建立會員
+  //       // 2. 建立管理員
   //       const { name, email, phone } = await getPayload();
   //       const data: Prisma.UserCreateInput = {
   //         phone,
@@ -396,7 +396,7 @@ export class UserAuthService {
   //       return user;
   //     });
   //   } catch (err) {
-  //     this.logger.error('會員建立或登入失敗', err);
+  //     this.logger.error('管理員建立或登入失敗', err);
   //     throw err;
   //   }
   // }
@@ -412,7 +412,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此會員');
+      abort('找無此管理員');
     }
 
     const { refreshExpires } =
@@ -500,7 +500,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此會員');
+      abort('找無此管理員');
     }
 
     return plainToInstance(UserEntity, user);
