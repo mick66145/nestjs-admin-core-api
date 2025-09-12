@@ -23,9 +23,17 @@ export interface LineLoginConfigInterface {
   channelId: string;
 }
 
+export interface GoogleCloudStorageConfigInterface {
+  projectId: string;
+  privateKey: string;
+  clientEmail: string;
+  bucketName: string;
+}
+
 export interface ThirdPartyConfigInterface {
   e8d: E8dConfigInterface;
   googleMail: GoogleMailConfigInterface;
   googleLogin: GoogleLoginConfigInterface;
   lineLogin: LineLoginConfigInterface;
+  googleCloudStorage: GoogleCloudStorageConfigInterface;
 }

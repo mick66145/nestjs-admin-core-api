@@ -24,6 +24,12 @@ export const configFactory = (): ThirdPartyConfigInterface => ({
   lineLogin: {
     channelId: process.env.LINE_LOGIN_CHANNEL_ID ?? '',
   },
+  googleCloudStorage: {
+    projectId: process.env.GCS_PROJECT_ID || '',
+    privateKey: process.env.GCS_PRIVATE_KEY || '',
+    clientEmail: process.env.GCS_CLIENT_EMAIL || '',
+    bucketName: process.env.GCS_BUCKET || '',
+  },
 });
 
 export default registerAs(token, configFactory);

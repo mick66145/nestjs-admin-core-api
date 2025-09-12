@@ -14,6 +14,7 @@ import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './libs/permission/permission.module';
 import { ThirdPartyModule } from './third-party/third-party.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ThirdPartyModule } from './third-party/third-party.module';
     VerificationModule,
     UserModule,
     RoleModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [],

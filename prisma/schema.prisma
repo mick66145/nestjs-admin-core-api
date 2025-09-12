@@ -187,3 +187,20 @@ model UserAccountHasPermission {
   @@id([userAccountId, permission])
   @@map("user_account_has_permission")
 }
+
+model FileStorage {
+  uuid           String    @id @default(uuid())
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
+  path           String
+  driver         String
+  originFileName String    @map("origin_file_name")
+  fileName       String    @map("file_name")
+  filePath       String    @map("file_path")
+  fileType       String    @map("file_type")
+  fileSize       Int       @map("file_size")
+  fileUrl        String    @map("file_url")
+
+  @@map("file_storage")
+}
