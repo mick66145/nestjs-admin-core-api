@@ -30,7 +30,7 @@ export class ProfileEntity implements $Prisma.User {
   @Expose()
   updatedAt!: Date;
 
-  @ApiProperty({ description: '管理員名稱', example: '管理員名稱' })
+  @ApiProperty({ description: '總後台管理員名稱', example: '總後台管理員名稱' })
   @Expose()
   name!: string;
 

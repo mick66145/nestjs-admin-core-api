@@ -1,10 +1,11 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsNotEmptyObject,
   IsObject,
   IsString,
@@ -31,18 +32,18 @@ export class CreateUserDto {
   @IsString()
   password!: string;
 
-  @ApiProperty({ description: '管理員名稱', example: '管理員名稱' })
+  @ApiProperty({ description: '總後台管理員名稱', example: '總後台管理員名稱' })
   @IsNotEmpty()
   @IsString()
   name!: string;
 
-  @ApiProperty({ description: '手機', example: '0912345678' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ description: '手機', example: '0912345678' })
+  @IsOptional()
   @IsString()
   phone!: string;
 
-  @ApiProperty({ description: 'Email', example: 'example@mail.com' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ description: 'Email', example: 'example@mail.com' })
+  @IsOptional()
   @IsEmail()
   email!: string;
 

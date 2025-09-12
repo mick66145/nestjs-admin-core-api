@@ -24,7 +24,7 @@ import { UserService } from './user.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResendVerifyDto, VerifyDto } from './dto/verify.dto';
-// import { ThirdPartyLoginDto } from './dto/third-party-login.dto';
+import { ThirdPartyLoginDto } from './dto/third-party-login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { RefreshTokenDto, VerifyTokenDto } from './dto/refresh-token.dto';
 import {
@@ -55,7 +55,7 @@ export class UserAuthController {
     private readonly verifyTokenService: VerifyTokenService,
   ) {}
 
-  @ApiOperation({ summary: '管理員註冊' })
+  @ApiOperation({ summary: '總後台管理員註冊' })
   @ApiOkResponse({ type: RegisterEntity })
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
@@ -66,7 +66,7 @@ export class UserAuthController {
     // 1. 檢查帳號是否已存在
     await this.userAuthService.checkAccountExists(account);
 
-    // 2. 建立管理員
+    // 2. 建立總後台管理員
     const user = await this.userAuthService.registerWithVerification({
       ...registerDto,
       orgId,
@@ -122,13 +122,13 @@ export class UserAuthController {
       type: VerifyType.REGISTER,
     });
 
-    // 2. 取得管理員資訊
+    // 2. 取得總後台管理員資訊
     const user = await this.userAuthService.findUserByVerifyTokenOrThrow(
       verifyToken,
       VerifyType.REGISTER,
     );
 
-    // 3. 更新管理員資訊
+    // 3. 更新總後台管理員資訊
     await this.userService.update(
       { userAccountId: user.userAccountId },
       {
@@ -144,13 +144,13 @@ export class UserAuthController {
     return this.userAuthService.getTokenEntity(token);
   }
 
-  @ApiOperation({ summary: '管理員登入' })
+  @ApiOperation({ summary: '總後台管理員登入' })
   @ApiOkResponse({ type: TokenEntity })
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     const { account, password } = loginDto;
 
-    // 1. 取得管理員資訊，並檢查管理員是否啟用
+    // 1. 取得總後台管理員資訊，並檢查總後台管理員是否啟用
     const getUser = async () => {
       try {
         return await this.userService.findByAccountOrThrow({
@@ -164,7 +164,7 @@ export class UserAuthController {
     const user = await getUser();
 
     if (!user.isEnabled) {
-      abort('管理員尚未啟用，無法登入', HttpStatus.FORBIDDEN);
+      abort('總後台管理員尚未啟用，無法登入', HttpStatus.FORBIDDEN);
     }
 
     // 2. 登入驗證
@@ -180,25 +180,25 @@ export class UserAuthController {
     return this.userAuthService.getTokenEntity(token);
   }
 
-  // @ApiOperation({ summary: '第三方會員登入' })
-  // @ApiOkResponse({ type: TokenEntity })
-  // @Post('third-party-login')
-  // async thirdPartyLogin(@Body() thirdPartyLoginDto: ThirdPartyLoginDto) {
-  //   const orgId = 0;
+  @ApiOperation({ summary: '第三方會員登入' })
+  @ApiOkResponse({ type: TokenEntity })
+  @Post('third-party-login')
+  async thirdPartyLogin(@Body() thirdPartyLoginDto: ThirdPartyLoginDto) {
+    const orgId = 0;
 
-  //   // 1. 建立管理員
-  //   const user = await this.userAuthService.thirdPartyLogin({
-  //     ...thirdPartyLoginDto,
-  //     orgId,
-  //   });
+    // 1. 建立總後台管理員
+    const user = await this.userAuthService.thirdPartyLogin({
+      ...thirdPartyLoginDto,
+      orgId,
+    });
 
-  //   // 2. 取得登入token
-  //   const token = await this.userAuthService.getJwtToken({
-  //     userAccountId: user.userAccountId,
-  //   });
+    // 2. 取得登入token
+    const token = await this.userAuthService.getJwtToken({
+      userAccountId: user.userAccountId,
+    });
 
-  //   return this.userAuthService.getTokenEntity(token);
-  // }
+    return this.userAuthService.getTokenEntity(token);
+  }
 
   @ApiOperation({ summary: '取得登入者資訊' })
   @UseAuth()
@@ -287,7 +287,7 @@ export class UserAuthController {
   ) {
     const { method, target } = forgetPasswordTokenDto;
 
-    // 1. 驗證管理員資料
+    // 1. 驗證總後台管理員資料
     const targetWhere = () => {
       if (method === ForgetPasswordSendMethod.EMAIL) {
         return { email: target };

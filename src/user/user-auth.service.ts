@@ -14,20 +14,20 @@ import { GoogleMailService } from 'src/third-party/google-mail/google-mail.servi
 import { GoogleLoginService } from 'src/third-party/google-login/google-login.service';
 import { LineLoginService } from 'src/third-party/line-login/line-login.service';
 import { UserAccountService } from 'src/user-account/user-account.service';
-// import { UserEntity } from 'src/user/entities/user.entity';
+import { UserAccountEntity } from 'src/user-account/entities/user-account.entity';
 import { VerifyTokenService } from './verify-token.service';
 import { VerifyWithTypeDto } from './dto/verify.dto';
 import { GenerateVerificationAndSendDto } from './dto/generate-verification-and-send.dto';
 import {
   SignPayload,
   JwtPayload,
-  // ThirtPartyPayload,
+  ThirtPartyPayload,
 } from './user-auth.interface';
 import { VerifyType } from './enum/verify-type.enum';
 import { RegisterWithOrgIdDto } from './dto/register.dto';
-// import { ThirdPartyLoginWithOrgIdDto } from './dto/third-party-login.dto';
+import { ThirdPartyLoginWithOrgIdDto } from './dto/third-party-login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-// import { ThirdPartyLoginType } from './enum/third-party-login-type.enum';
+import { ThirdPartyLoginType } from './enum/third-party-login-type.enum';
 import { TokenEntity } from './entities/token.entity';
 import { UserEntity } from './entities/user.entity';
 
@@ -56,7 +56,7 @@ export class UserAuthService {
   }
 
   /**
-   * 註冊管理員(需進行驗證)
+   * 註冊總後台管理員(需進行驗證)
    */
   async registerWithVerification(registerWithOrgIdDto: RegisterWithOrgIdDto) {
     const { account, password, name, phone, email } = registerWithOrgIdDto;
@@ -74,7 +74,7 @@ export class UserAuthService {
 
         const userAccount = await getUser(account);
 
-        // 2. 建立管理員
+        // 2. 建立總後台管理員
         const data: Prisma.UserCreateInput = {
           phone,
           email,
@@ -105,13 +105,13 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('管理員建立失敗', err);
+      this.logger.error('總後台管理員建立失敗', err);
       throw err;
     }
   }
 
   /**
-   * 註冊管理員(無需驗證)
+   * 註冊總後台管理員(無需驗證)
    */
   register(registerWithOrgIdDto: RegisterWithOrgIdDto) {
     const { account, password, name, phone, email } = registerWithOrgIdDto;
@@ -129,7 +129,7 @@ export class UserAuthService {
 
         const userAccount = await getUser(account);
 
-        // 2. 建立管理員
+        // 2. 建立總後台管理員
         const data: Prisma.UserCreateInput = {
           phone,
           email,
@@ -143,7 +143,7 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('管理員建立失敗', err);
+      this.logger.error('總後台管理員建立失敗', err);
       throw err;
     }
   }
@@ -165,7 +165,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此管理員');
+      abort('找無此總後台管理員');
     }
 
     // 2. 生成驗證碼
@@ -200,10 +200,10 @@ export class UserAuthService {
       let subject = '';
       switch (verifyType) {
         case 'register':
-          subject = `管理員註冊驗證碼`;
+          subject = `總後台管理員註冊驗證碼`;
           break;
         case 'forgetPassword':
-          subject = `管理員忘記密碼驗證碼`;
+          subject = `總後台管理員忘記密碼驗證碼`;
           break;
         default:
           abort('無效的驗證類型');
@@ -305,101 +305,101 @@ export class UserAuthService {
   /**
    * 第三方登入註冊
    */
-  // async thirdPartyLogin(
-  //   thirdPartyLoginWithOrgIdDto: ThirdPartyLoginWithOrgIdDto,
-  // ) {
-  //   const { type, token, platform, orgId = 0 } = thirdPartyLoginWithOrgIdDto;
+  async thirdPartyLogin(
+    thirdPartyLoginWithOrgIdDto: ThirdPartyLoginWithOrgIdDto,
+  ) {
+    const { type, token, platform, orgId = 0 } = thirdPartyLoginWithOrgIdDto;
 
-  //   const getUser = async () => {
-  //     let user: UserEntity;
+    const getUserAccount = async () => {
+      let userAccount: UserAccountEntity;
 
-  //     switch (type) {
-  //       case ThirdPartyLoginType.GOOGLE:
-  //         if (platform === undefined) {
-  //           throw Error('platform不可為空');
-  //         }
+      switch (type) {
+        case ThirdPartyLoginType.GOOGLE:
+          if (platform === undefined) {
+            abort('platform不可為空');
+          }
 
-  //         user = await this.googleLoginService.login({
-  //           platform,
-  //           idToken: token,
-  //           orgId,
-  //         });
-  //         break;
-  //       case ThirdPartyLoginType.LINE:
-  //         user = await this.lineLoginService.login({
-  //           accessToken: token,
-  //           orgId,
-  //         });
-  //         break;
-  //       default:
-  //         abort('不合法的登入方式');
-  //     }
+          userAccount = await this.googleLoginService.login({
+            platform,
+            idToken: token,
+            orgId,
+          });
+          break;
+        case ThirdPartyLoginType.LINE:
+          userAccount = await this.lineLoginService.login({
+            accessToken: token,
+            orgId,
+          });
+          break;
+        default:
+          abort('不合法的登入方式');
+      }
 
-  //     return user;
-  //   };
+      return userAccount;
+    };
 
-  //   const getPayload = async (): Promise<ThirtPartyPayload> => {
-  //     let payload: ThirtPartyPayload;
+    const getPayload = async (): Promise<ThirtPartyPayload> => {
+      let payload: ThirtPartyPayload;
 
-  //     switch (type) {
-  //       case ThirdPartyLoginType.GOOGLE:
-  //         if (platform === undefined) {
-  //           throw Error('platform不可為空');
-  //         }
+      switch (type) {
+        case ThirdPartyLoginType.GOOGLE:
+          if (platform === undefined) {
+            abort('platform不可為空');
+          }
 
-  //         const { name, email } =
-  //           (await this.googleLoginService.getPayload({
-  //             platform,
-  //             idToken: token,
-  //           })) ?? {};
+          const { name, email } =
+            (await this.googleLoginService.getPayload({
+              platform,
+              idToken: token,
+            })) ?? {};
 
-  //         payload = {
-  //           name: name ?? '系統產生',
-  //           email: email,
-  //         };
+          payload = {
+            name: name ?? '系統產生',
+            email: email,
+          };
 
-  //         break;
-  //       case ThirdPartyLoginType.LINE:
-  //         const { displayName } =
-  //           (await this.lineLoginService.getUserProfile(token)) ?? {};
+          break;
+        case ThirdPartyLoginType.LINE:
+          const { displayName } =
+            (await this.lineLoginService.getUserProfile(token)) ?? {};
 
-  //         payload = {
-  //           name: displayName ?? '系統產生',
-  //         };
-  //         break;
-  //       default:
-  //         abort('不合法的登入方式');
-  //     }
+          payload = {
+            name: displayName ?? '系統產生',
+          };
+          break;
+        default:
+          abort('不合法的登入方式');
+      }
 
-  //     return payload;
-  //   };
+      return payload;
+    };
 
-  //   try {
-  //     return this.prisma.$transaction(async (tx) => {
-  //       // 1. 取得或建立帳號
-  //       const user = await getUser();
+    try {
+      return this.prisma.$transaction(async (tx) => {
+        // 1. 取得或建立帳號
+        const userAccount = await getUserAccount();
 
-  //       // 2. 建立管理員
-  //       const { name, email, phone } = await getPayload();
-  //       const data: Prisma.UserCreateInput = {
-  //         phone,
-  //         email,
-  //         name,
-  //         isValid: true,
-  //         user: { connect: { id: user.id } },
-  //       };
-  //       const [user] = await tx.user.findFirstOrCreate({
-  //         where: { userAccountId: user.id },
-  //         data,
-  //       });
+        // 2. 建立總後台管理員
+        const { name, email, phone } = await getPayload();
+        const data: Prisma.UserCreateInput = {
+          phone,
+          email,
+          name,
+          isValid: true,
+          userAccount: { connect: { id: userAccount.id } },
+        };
+        const [user] = await tx.user.findFirstOrCreate({
+          where: { userAccountId: userAccount.id },
+          data,
+        });
 
-  //       return user;
-  //     });
-  //   } catch (err) {
-  //     this.logger.error('管理員建立或登入失敗', err);
-  //     throw err;
-  //   }
-  // }
+        return user;
+      });
+    } catch (err) {
+      this.logger.error('總後台管理員建立或登入失敗', err);
+      throw err;
+    }
+  }
 
   /**
    * 生成登入token
@@ -412,7 +412,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此管理員');
+      abort('找無此總後台管理員');
     }
 
     const { refreshExpires } =
@@ -500,7 +500,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此管理員');
+      abort('找無此總後台管理員');
     }
 
     return plainToInstance(UserEntity, user);
