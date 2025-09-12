@@ -13,6 +13,7 @@ import { VerificationModule } from './verification/verification.module';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './libs/permission/permission.module';
+import { ThirdPartyModule } from './third-party/third-party.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PermissionModule } from './libs/permission/permission.module';
       inject: [ConfigService],
     }),
     PermissionModule,
+    ThirdPartyModule,
     UserAccountModule,
     VerificationModule,
     UserModule,

@@ -5,6 +5,7 @@ import swaggerConfig from 'src/_libs/app/swagger.config';
 import appProjectConfig from './app-project/app-project.config';
 import jwtConfig from 'src/_libs/auth/jwt.config';
 import verificationConfig from './verification/verification.config';
+import thirdPartyConfig from './third-party/third-party.config';
 
 export const configLoads = [
   appConfig,
@@ -14,4 +15,5 @@ export const configLoads = [
   appProjectConfig,
   jwtConfig,
   verificationConfig,
+  thirdPartyConfig,
 ];
