@@ -107,7 +107,7 @@ export class PermissionService {
             const ruleName = `${featureName}__${action}`.toLocaleUpperCase();
 
             if (Permission[ruleName] === undefined) {
-              throw Error('權限設定與權限列表不一致');
+              abort(`權限設定與權限列表不一致`);
             }
 
             return {
