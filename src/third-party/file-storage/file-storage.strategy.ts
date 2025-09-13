@@ -1,16 +1,17 @@
 export interface IFileStorageStrategy {
   save(
-    filePath: string,
+    directory: string,
+    fileName: string,
     buffer: Buffer,
     options?: {
       contentDisposition?: string;
       contentType?: string;
     },
   ): Promise<void>;
-  getPublicDownloadUrl(filePath: string): string;
+  getPublicDownloadUrl(directory: string, fileName: string): string;
 }
 
 export interface IFileStorageDownloadStrategy {
-  download(filePath: string): Promise<Buffer>;
+  download(directory: string, fileName: string): Promise<Buffer>;
   downloadByPublicUrl?(filePath: string): Promise<Buffer>;
 }

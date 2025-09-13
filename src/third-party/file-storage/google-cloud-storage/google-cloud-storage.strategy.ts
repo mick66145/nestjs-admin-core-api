@@ -14,7 +14,8 @@ export class GoogleCloudStorageStrategy
   ) {}
 
   async save(
-    filePath: string,
+    directory: string,
+    fileName: string,
     buffer: Buffer,
     options?: {
       contentDisposition?: string;
@@ -22,18 +23,22 @@ export class GoogleCloudStorageStrategy
     },
   ): Promise<void> {
     await this.googleCloudStorageService.save(
-      filePath,
-      'application/octet-stream',
+      directory,
+      fileName,
+      options?.contentType || 'application/octet-stream',
       buffer,
       options,
     );
   }
 
-  getPublicDownloadUrl(filePath: string): string {
-    return this.googleCloudStorageService.getPublicDownloadUrl(filePath);
+  getPublicDownloadUrl(directory: string, fileName: string): string {
+    return this.googleCloudStorageService.getPublicDownloadUrl(
+      directory,
+      fileName,
+    );
   }
 
-  async download(filePath: string): Promise<Buffer> {
-    return this.googleCloudStorageService.downloadByPublicUrl(filePath);
+  async download(directory: string, fileName: string): Promise<Buffer> {
+    return this.googleCloudStorageService.download(directory, fileName);
   }
 }

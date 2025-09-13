@@ -4,8 +4,8 @@ import { catchPrismaErrorOrThrow } from 'src/_libs/prisma/prisma-client-error';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
-import { Prisma, FileStorage } from '@prisma/client';
-import { getDeafultFolder, formatFileName } from 'src/libs/helper/file-helper';
+import { Prisma } from '@prisma/client';
+import { formatFileName } from 'src/libs/helper/file-helper';
 import { FileDriver, entityName } from './upload.interface';
 import {
   IFileStorageStrategy,
@@ -46,24 +46,41 @@ export class UploadService {
   public async create(file: Express.Multer.File, dto: CreateUploadDto) {
     const { path } = dto;
     const { originalname, mimetype, buffer, size } = file;
-    const driver = FileDriver.LOCAL;
+    const driver = FileDriver.GOOGLE_CLOUD_STORAGE;
 
     const originFileName = formatFileName(dto.fileName ?? originalname);
     const fileName = `${randomUUID()}${extname(originFileName)}`;
-    const defaultPath = getDeafultFolder(fileName);
-    const uploadFilePath = `${path ?? defaultPath}/${fileName}`;
+    const directory = path ?? this.getDeafultFolder(originFileName);
 
-    const data = await this.saveFile(
+    const filePath = await this.saveFile(
       driver,
-      path ?? defaultPath,
+      directory,
       fileName,
       mimetype,
       buffer,
       originFileName,
-      size,
-      uploadFilePath,
     );
-    return plainToInstance(UploadEntity, data);
+    const data: Prisma.FileStorageCreateInput = {
+      path: directory,
+      driver: driver,
+      originFileName,
+      fileName,
+      filePath,
+      fileType: mimetype,
+      fileSize: size,
+      fileUrl: this.strategyMap
+        .get(driver)!
+        .getPublicDownloadUrl(directory, fileName),
+    };
+
+    const orm = await this.prismaService
+      .$transaction(async (tx) => {
+        const orm = await tx.fileStorage.create({ data });
+        return orm;
+      })
+      .catch(catchPrismaErrorOrThrow(entityName));
+
+    return plainToInstance(UploadEntity, orm);
   }
 
   public async saveFile(
@@ -73,40 +90,17 @@ export class UploadService {
     mimetype: string,
     buffer: Buffer,
     originFileName: string,
-    size: number,
-    filePath: string,
-  ): Promise<FileStorage> {
-    let fileUrl = '';
-
+  ): Promise<string> {
     const strategy = this.strategyMap.get(driver);
     if (!strategy) {
       throw new Error(`Unsupported file driver: ${driver}`);
     }
 
-    await strategy.save(filePath, buffer, {
+    await strategy.save(directory, fileName, buffer, {
       contentDisposition: `attachment; filename*=utf-8''${encodeURI(originFileName)}`,
       contentType: mimetype,
     });
-    fileUrl = strategy.getPublicDownloadUrl(filePath);
-
-    const data: Prisma.FileStorageCreateInput = {
-      path: directory,
-      driver: driver,
-      originFileName,
-      fileName,
-      filePath,
-      fileType: mimetype,
-      fileSize: size,
-      fileUrl,
-    };
-
-    const orm = await this.prismaService
-      .$transaction(async (tx) => {
-        const orm = await tx.fileStorage.create({ data });
-        return orm;
-      })
-      .catch(catchPrismaErrorOrThrow(entityName));
-    return orm;
+    return `${directory}/${fileName}`;
   }
 
   public async download(uuid: string) {
@@ -115,7 +109,7 @@ export class UploadService {
     if (!strategy) {
       throw new Error(`Unsupported file driver for download: ${orm.driver}`);
     }
-    const buffer = await strategy.download(orm.filePath);
+    const buffer = await strategy.download(orm.path, orm.fileName);
     return { upload: orm, buffer };
   }
 
@@ -149,5 +143,54 @@ export class UploadService {
       throw new HttpException(response, HttpStatus.NOT_FOUND);
     }
     return orm;
+  }
+
+  private getDeafultFolder(filename: string): string {
+    if (!filename) {
+      return 'public';
+    }
+
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    switch (ext) {
+      case 'xls':
+      case 'xlsx':
+      case 'doc':
+      case 'docx':
+      case 'ppt':
+      case 'pptx':
+      case 'pdf':
+      case 'txt':
+      case 'csv':
+      case 'zip':
+      case '7z':
+      case 'gzip':
+      case 'iso':
+      case 'rar':
+      case 'tar':
+        return 'files';
+      case 'bmp':
+      case 'gif':
+      case 'jpeg':
+      case 'jpg':
+      case 'png':
+      case 'ico':
+      case 'tif':
+      case 'tiff':
+        return 'images';
+      case 'mp3':
+      case 'avi':
+      case 'mp4':
+      case 'wav':
+      case 'flv':
+      case 'mpg':
+      case 'mpeg':
+      case 'mov':
+      case 'rmvb':
+      case 'wmv':
+      case 'swf':
+        return 'video';
+      default:
+        return 'other';
+    }
   }
 }

@@ -4,7 +4,7 @@ import { join } from 'path';
 
 @Injectable()
 export class LocalFileStorageService {
-  private readonly UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './storage';
+  private readonly UPLOAD_DIR = process.env.LOCAL_UPLOAD_DIR || './storage/app';
 
   constructor() {
     this.ensureUploadDirExists();
@@ -19,24 +19,24 @@ export class LocalFileStorageService {
   }
 
   async save(
-    filePath: string,
+    directory: string,
+    fileName: string,
     buffer: Buffer,
-    options?: { contentDisposition?: string },
   ): Promise<string> {
-    const fullPath = join(this.UPLOAD_DIR, filePath);
-    const dir = join(this.UPLOAD_DIR, ...filePath.split('/').slice(0, -1));
-    await fs.mkdir(dir, { recursive: true });
+    const finalDir = join(this.UPLOAD_DIR, directory);
+    const fullPath = join(finalDir, fileName);
+    await fs.mkdir(finalDir, { recursive: true });
     await fs.writeFile(fullPath, buffer);
-    return fullPath;
+    return join(directory, fileName);
   }
 
-  async download(filePath: string): Promise<Buffer> {
-    const fullPath = join(this.UPLOAD_DIR, filePath);
+  async download(directory: string, fileName: string): Promise<Buffer> {
+    const fullPath = join(this.UPLOAD_DIR, directory, fileName);
     return fs.readFile(fullPath);
   }
 
-  getPublicDownloadUrl(filePath: string): string {
+  getPublicDownloadUrl(directory: string, fileName: string): string {
+    const filePath = join(directory, fileName);
     return `${this.UPLOAD_DIR.replace('.', '')}/${filePath}`.replace('//', '/');
   }
 }
-

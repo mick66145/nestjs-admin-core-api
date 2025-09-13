@@ -28,7 +28,8 @@ export class GoogleCloudStorageService {
   }
 
   save(
-    path: string,
+    directory: string,
+    fileName: string,
     contentType: string,
     media: Buffer,
     fileMeta?: FileMetadata,
@@ -41,9 +42,10 @@ export class GoogleCloudStorageService {
       (obj, item) => Object.assign(obj, item),
       {},
     );
+    const filePath = `${directory}/${fileName}`;
 
     return new Promise((resolve, reject) => {
-      const file = this.storage.bucket(this.bucketName).file(path);
+      const file = this.storage.bucket(this.bucketName).file(filePath);
       const stream = file.createWriteStream({ contentType });
       stream.on('finish', async () => {
         await file.setMetadata({ ...fileMeta, metadata });
@@ -55,17 +57,18 @@ export class GoogleCloudStorageService {
     });
   }
 
-  async exits(path: string) {
-    return this.storage.bucket(this.bucketName).file(path).exists();
+  async exits(filePath: string) {
+    return this.storage.bucket(this.bucketName).file(filePath).exists();
   }
 
-  async getFile(path: string) {
-    return this.storage.bucket(this.bucketName).file(path).get();
+  async getFile(filePath: string) {
+    return this.storage.bucket(this.bucketName).file(filePath).get();
   }
 
-  async download(path: string) {
+  async download(directory: string, fileName: string): Promise<Buffer> {
     return new Promise<Buffer>((resolve, reject) => {
-      const file = this.storage.bucket(this.bucketName).file(path);
+      const filePath = `${directory}/${fileName}`;
+      const file = this.storage.bucket(this.bucketName).file(filePath);
       const bufferArray: any[] = [];
       const stream = file.createReadStream();
       stream.on('finish', async () => {
@@ -78,8 +81,8 @@ export class GoogleCloudStorageService {
     });
   }
 
-  async downloadByPublicUrl(path: string) {
-    const downloadUrl = this.getPublicDownloadUrl(path);
+  async downloadByPublicUrl(filePath: string) {
+    const downloadUrl = `${this.storagePublicBaseUrl}/${this.bucketName}/${filePath}`;
     const { data: arrayBuffer } = await firstValueFrom(
       this.httpService.get<ArrayBuffer>(downloadUrl, {
         responseType: 'arraybuffer',
@@ -88,14 +91,15 @@ export class GoogleCloudStorageService {
     return Buffer.from(arrayBuffer);
   }
 
-  async delete(path: string) {
+  async delete(filePath: string) {
     await this.storage
       .bucket(this.bucketName)
-      .file(path)
+      .file(filePath)
       .delete({ ignoreNotFound: true });
   }
 
-  getPublicDownloadUrl(path: string) {
-    return `${this.storagePublicBaseUrl}/${this.bucketName}/${path}`;
+  getPublicDownloadUrl(directory: string, fileName: string) {
+    const filePath = `${directory}/${fileName}`;
+    return `${this.storagePublicBaseUrl}/${this.bucketName}/${filePath}`;
   }
 }
