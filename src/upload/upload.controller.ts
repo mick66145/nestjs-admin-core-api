@@ -41,7 +41,7 @@ export class UploadController {
     file: Express.Multer.File,
     @Body() dto: CreateUploadDto,
   ) {
-    return this.uploadService.upload(file, dto);
+    return this.uploadService.create(file, dto);
   }
 
   @ApiOperation({ summary: `下載${entityName}` })
@@ -72,8 +72,8 @@ export class UploadController {
   @ApiDataListResponse(UploadEntity, { hasMeta: true })
   @Get()
   async findAll(@Query() query: FindAllQueryDto) {
-    const { data, meta } = await this.uploadService.findAll(query);
-    return new ResourceListEntity(data, meta);
+    const [data, totalCount] = await this.uploadService.findAll(query);
+    return new ResourceListEntity(data, { totalCount });
   }
 
   @ApiOperation({ summary: `取得單一${entityName}` })

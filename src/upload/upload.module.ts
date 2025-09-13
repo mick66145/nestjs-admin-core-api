@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { GoogleCloudStorageModule } from 'src/third-party/google-cloud-storage/google-cloud-storage.module';
-import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
+import { UploadController } from './upload.controller';
+import { FileStorageModule } from 'src/third-party/file-storage/file-storage.module';
 
 @Module({
-  imports: [GoogleCloudStorageModule],
+  imports: [FileStorageModule],
   controllers: [UploadController],
   providers: [UploadService],
+  exports: [UploadService],
 })
 export class UploadModule {}
