@@ -10,3 +10,12 @@ export function getFilePath(fullPath: string): Array<string> {
 
   return pathRegex.exec(fullPath) ?? [];
 }
+
+export function formatFileName(originalname: string) {
+  let filename = originalname;
+  if (!/[^\u0000-\u00ff]/.test(filename)) {
+    filename = Buffer.from(originalname, 'latin1').toString('utf8');
+  }
+
+  return filename;
+}
