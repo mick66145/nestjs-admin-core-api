@@ -56,7 +56,7 @@ export class UserAuthService {
   }
 
   /**
-   * 註冊總後台管理員(需進行驗證)
+   * 註冊後台使用者(需進行驗證)
    */
   async registerWithVerification(registerWithOrgIdDto: RegisterWithOrgIdDto) {
     const { account, password, name, phone, email } = registerWithOrgIdDto;
@@ -74,7 +74,7 @@ export class UserAuthService {
 
         const userAccount = await getUser(account);
 
-        // 2. 建立總後台管理員
+        // 2. 建立後台使用者
         const data: Prisma.UserCreateInput = {
           phone,
           email,
@@ -105,13 +105,13 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('總後台管理員建立失敗', err);
+      this.logger.error('後台使用者建立失敗', err);
       throw err;
     }
   }
 
   /**
-   * 註冊總後台管理員(無需驗證)
+   * 註冊後台使用者(無需驗證)
    */
   register(registerWithOrgIdDto: RegisterWithOrgIdDto) {
     const { account, password, name, phone, email } = registerWithOrgIdDto;
@@ -129,7 +129,7 @@ export class UserAuthService {
 
         const userAccount = await getUser(account);
 
-        // 2. 建立總後台管理員
+        // 2. 建立後台使用者
         const data: Prisma.UserCreateInput = {
           phone,
           email,
@@ -143,7 +143,7 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('總後台管理員建立失敗', err);
+      this.logger.error('後台使用者建立失敗', err);
       throw err;
     }
   }
@@ -165,7 +165,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此總後台管理員');
+      abort('找無此後台使用者');
     }
 
     // 2. 生成驗證碼
@@ -200,10 +200,10 @@ export class UserAuthService {
       let subject = '';
       switch (verifyType) {
         case 'register':
-          subject = `總後台管理員註冊驗證碼`;
+          subject = `後台使用者註冊驗證碼`;
           break;
         case 'forgetPassword':
-          subject = `總後台管理員忘記密碼驗證碼`;
+          subject = `後台使用者忘記密碼驗證碼`;
           break;
         default:
           abort('無效的驗證類型');
@@ -379,7 +379,7 @@ export class UserAuthService {
         // 1. 取得或建立帳號
         const userAccount = await getUserAccount();
 
-        // 2. 建立總後台管理員
+        // 2. 建立後台使用者
         const { name, email, phone } = await getPayload();
         const data: Prisma.UserCreateInput = {
           phone,
@@ -396,7 +396,7 @@ export class UserAuthService {
         return user;
       });
     } catch (err) {
-      this.logger.error('總後台管理員建立或登入失敗', err);
+      this.logger.error('後台使用者建立或登入失敗', err);
       throw err;
     }
   }
@@ -412,7 +412,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此總後台管理員');
+      abort('找無此後台使用者');
     }
 
     const { refreshExpires } =
@@ -500,7 +500,7 @@ export class UserAuthService {
     });
 
     if (user === null) {
-      abort('找無此總後台管理員');
+      abort('找無此後台使用者');
     }
 
     return plainToInstance(UserEntity, user);

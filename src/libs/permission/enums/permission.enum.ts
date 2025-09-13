@@ -1,5 +1,5 @@
 export const Permission = {
-  // 總後台管理員管理
+  // 後台使用者管理
   USER__VIEW: 'USER__VIEW',
   USER__CREATE: 'USER__CREATE',
   USER__UPDATE: 'USER__UPDATE',

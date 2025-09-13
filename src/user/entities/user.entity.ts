@@ -60,7 +60,7 @@ export class UserEntity {
   @Expose()
   updatedAt!: Date;
 
-  @ApiProperty({ description: '總後台管理員名稱', example: '總後台管理員名稱' })
+  @ApiProperty({ description: '後台使用者名稱', example: '後台使用者名稱' })
   @Expose()
   name!: string;
 
@@ -80,7 +80,7 @@ export class UserEntity {
   @Expose()
   isEnabled!: boolean;
 
-  @ApiProperty({ description: '是否為根帳號' })
+  @ApiProperty({ description: '是否為超級管理員帳號' })
   @Expose()
   isRoot!: boolean;
 

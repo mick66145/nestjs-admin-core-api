@@ -32,7 +32,7 @@ export class CreateUserDto {
   @IsString()
   password!: string;
 
-  @ApiProperty({ description: '總後台管理員名稱', example: '總後台管理員名稱' })
+  @ApiProperty({ description: '後台使用者名稱', example: '後台使用者名稱' })
   @IsNotEmpty()
   @IsString()
   name!: string;

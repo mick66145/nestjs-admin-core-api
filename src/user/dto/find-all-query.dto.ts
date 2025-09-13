@@ -5,7 +5,7 @@ import { PaginationQueryDto } from 'src/_libs/api-request/query.dto';
 import { TransformEmptyStringToUndefined } from 'src/_libs/transform/transform-to';
 
 export class FindAllQueryDto extends PaginationQueryDto {
-  @IntIdsQuery('總後台管理員')
+  @IntIdsQuery('後台使用者')
   ids?: number[];
 
   @IntIdsQuery('角色')

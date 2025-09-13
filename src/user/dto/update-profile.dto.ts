@@ -4,8 +4,8 @@ import { Sometimes } from 'src/_libs/validator/sometimes.decorator';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({
-    description: '總後台管理員名稱',
-    example: '總後台管理員名稱',
+    description: '後台使用者名稱',
+    example: '後台使用者名稱',
   })
   @Sometimes()
   @IsString()

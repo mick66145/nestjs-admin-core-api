@@ -46,7 +46,7 @@ import {
 } from './entities/forget-password.entity';
 import { ForgetPasswordSendMethod } from './enum/forget-password-send-method.enum';
 
-@ApiTags('總後台管理員')
+@ApiTags('後台使用者')
 @Controller('user-auth')
 export class UserAuthController {
   private readonly logger = new Logger(UserAuthController.name);
@@ -58,7 +58,7 @@ export class UserAuthController {
     private readonly verifyTokenService: VerifyTokenService,
   ) {}
 
-  @ApiOperation({ summary: '總後台管理員註冊' })
+  @ApiOperation({ summary: '後台使用者註冊' })
   @ApiOkResponse({ type: RegisterEntity })
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
@@ -69,7 +69,7 @@ export class UserAuthController {
     // 1. 檢查帳號是否已存在
     await this.userAuthService.checkAccountExists(account);
 
-    // 2. 建立總後台管理員
+    // 2. 建立後台使用者
     const user = await this.userAuthService.registerWithVerification({
       ...registerDto,
       orgId,
@@ -125,13 +125,13 @@ export class UserAuthController {
       type: VerifyType.REGISTER,
     });
 
-    // 2. 取得總後台管理員資訊
+    // 2. 取得後台使用者資訊
     const user = await this.userAuthService.findUserByVerifyTokenOrThrow(
       verifyToken,
       VerifyType.REGISTER,
     );
 
-    // 3. 更新總後台管理員資訊
+    // 3. 更新後台使用者資訊
     await this.userService.update(
       { userAccountId: user.userAccountId },
       {
@@ -147,13 +147,13 @@ export class UserAuthController {
     return this.userAuthService.getTokenEntity(token);
   }
 
-  @ApiOperation({ summary: '總後台管理員登入' })
+  @ApiOperation({ summary: '後台使用者登入' })
   @ApiOkResponse({ type: TokenEntity })
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     const { account, password } = loginDto;
 
-    // 1. 取得總後台管理員資訊，並檢查總後台管理員是否啟用
+    // 1. 取得後台使用者資訊，並檢查後台使用者是否啟用
     const getUser = async () => {
       try {
         return await this.userService.findByAccountOrThrow({
@@ -167,7 +167,7 @@ export class UserAuthController {
     const user = await getUser();
 
     if (!user.isEnabled) {
-      abort('總後台管理員尚未啟用，無法登入', HttpStatus.FORBIDDEN);
+      abort('後台使用者尚未啟用，無法登入', HttpStatus.FORBIDDEN);
     }
 
     // 2. 登入驗證
@@ -189,7 +189,7 @@ export class UserAuthController {
   async thirdPartyLogin(@Body() thirdPartyLoginDto: ThirdPartyLoginDto) {
     const orgId = 0;
 
-    // 1. 建立總後台管理員
+    // 1. 建立後台使用者
     const user = await this.userAuthService.thirdPartyLogin({
       ...thirdPartyLoginDto,
       orgId,
@@ -290,7 +290,7 @@ export class UserAuthController {
   ) {
     const { method, target } = forgetPasswordTokenDto;
 
-    // 1. 驗證總後台管理員資料
+    // 1. 驗證後台使用者資料
     const targetWhere = () => {
       if (method === ForgetPasswordSendMethod.EMAIL) {
         return { email: target };
