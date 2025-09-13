@@ -1,22 +1,23 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ModuleRef } from '@nestjs/core';
 import { PrismaService } from 'src/_libs/prisma/prisma.service';
 import { catchPrismaErrorOrThrow } from 'src/_libs/prisma/prisma-client-error';
+import { formatFileName } from 'src/_libs/utils/helper/file-helper';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { Prisma } from '@prisma/client';
-import { formatFileName } from 'src/libs/helper/file-helper';
 import { FileDriver, entityName } from './upload.interface';
 import {
   IFileStorageStrategy,
   IFileStorageDownloadStrategy,
-} from '../third-party/file-storage/file-storage.strategy';
+} from 'src/third-party/file-storage/file-storage.strategy';
+import { LocalFileStorageStrategy } from 'src/third-party/file-storage/local-file-storage/local-file-storage.strategy';
+import { GoogleCloudStorageStrategy } from 'src/third-party/file-storage/google-cloud-storage/google-cloud-storage.strategy';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { FindAllQueryDto } from './dto/find-all-query.dto';
 import { UploadEntity } from './entities/upload.entity';
-import { ModuleRef } from '@nestjs/core';
-import { LocalFileStorageStrategy } from '../third-party/file-storage/local-file-storage/local-file-storage.strategy';
-import { GoogleCloudStorageStrategy } from '../third-party/file-storage/google-cloud-storage/google-cloud-storage.strategy';
 
 @Injectable()
 export class UploadService {
@@ -25,9 +26,14 @@ export class UploadService {
     IFileStorageStrategy & IFileStorageDownloadStrategy
   >;
 
+  private readonly driver = this.configService.getOrThrow<string>(
+    'thirdParty.fileSystemDriver',
+  ) as FileDriver;
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly moduleRef: ModuleRef,
+    private readonly configService: ConfigService,
   ) {
     this.strategyMap = new Map<
       FileDriver,
@@ -46,14 +52,13 @@ export class UploadService {
   public async create(file: Express.Multer.File, dto: CreateUploadDto) {
     const { path } = dto;
     const { originalname, mimetype, buffer, size } = file;
-    const driver = FileDriver.GOOGLE_CLOUD_STORAGE;
 
     const originFileName = formatFileName(dto.fileName ?? originalname);
     const fileName = `${randomUUID()}${extname(originFileName)}`;
     const directory = path ?? this.getDeafultFolder(originFileName);
 
     const filePath = await this.saveFile(
-      driver,
+      this.driver,
       directory,
       fileName,
       mimetype,
@@ -62,14 +67,14 @@ export class UploadService {
     );
     const data: Prisma.FileStorageCreateInput = {
       path: directory,
-      driver: driver,
+      driver: this.driver,
       originFileName,
       fileName,
       filePath,
       fileType: mimetype,
       fileSize: size,
       fileUrl: this.strategyMap
-        .get(driver)!
+        .get(this.driver)!
         .getPublicDownloadUrl(directory, fileName),
     };
 

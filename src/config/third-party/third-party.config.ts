@@ -30,6 +30,7 @@ export const configFactory = (): ThirdPartyConfigInterface => ({
     clientEmail: process.env.GCS_CLIENT_EMAIL || '',
     bucketName: process.env.GCS_BUCKET || '',
   },
+  fileSystemDriver: process.env.FILESYSTEM_DRIVER ?? 'local',
 });
 
 export default registerAs(token, configFactory);

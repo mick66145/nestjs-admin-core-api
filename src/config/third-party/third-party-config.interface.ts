@@ -36,4 +36,5 @@ export interface ThirdPartyConfigInterface {
   googleLogin: GoogleLoginConfigInterface;
   lineLogin: LineLoginConfigInterface;
   googleCloudStorage: GoogleCloudStorageConfigInterface;
+  fileSystemDriver: string;
 }
