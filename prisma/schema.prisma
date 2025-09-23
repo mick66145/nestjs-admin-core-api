@@ -36,8 +36,8 @@ model Post {
 // **********
 model UserAccount {
   id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   type        String
   account     String
@@ -57,8 +57,8 @@ model UserAccount {
 
 model Verification {
   id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   code     String
   isValid  Boolean   @default(true) @map("is_valid")
@@ -105,6 +105,7 @@ model SendMailLog {
 // User
 // **********
 model User {
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   name      String
@@ -117,7 +118,6 @@ model User {
   userAccountId Int         @map("user_account_id")
   userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
 
-  @@id([userAccountId])
   @@map("user")
 }
 

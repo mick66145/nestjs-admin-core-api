@@ -52,6 +52,10 @@ export class UserAccountEntity {
 
 @Exclude()
 export class UserEntity {
+  @ApiProperty({ example: 1 })
+  @Expose()
+  id!: number;
+
   @ApiProperty()
   @Expose()
   createdAt!: Date;
