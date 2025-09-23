@@ -81,15 +81,24 @@ export class UserAuthService {
           name,
           userAccount: { connect: { id: userAccount.id } },
         };
-        const user = await tx.user.upsert({
+        let user = await tx.user.findFirst({
           where: { userAccountId: userAccount.id },
-          create: data,
-          update: {
-            phone,
-            email,
-            name,
-          },
         });
+
+        if (user) {
+          user = await tx.user.update({
+            where: { id: user.id },
+            data: {
+              phone,
+              email,
+              name,
+            },
+          });
+        } else {
+          user = await tx.user.create({
+            data: data,
+          });
+        }
 
         // 2.1 生成註冊驗證用token
         const token = generateRandomString(64, ['LOWER', 'NUMBER']);
@@ -160,7 +169,7 @@ export class UserAuthService {
 
     // 1. 取得user
     const userAccount = await this.userAccountService.findOne(userAccountId);
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: { userAccountId },
     });
 
@@ -258,7 +267,7 @@ export class UserAuthService {
 
     const userAccount = await getUser(account);
     const user = userAccount
-      ? await this.prisma.user.findUnique({
+      ? await this.prisma.user.findFirst({
           where: { userAccountId: userAccount.id },
         })
       : null;
@@ -297,7 +306,7 @@ export class UserAuthService {
       abort('找無此驗證token');
     }
 
-    return this.prisma.user.findUniqueOrThrow({
+    return this.prisma.user.findFirstOrThrow({
       where: { userAccountId: verifyToken.userAccountId },
     });
   }
@@ -407,7 +416,7 @@ export class UserAuthService {
   async getJwtToken(params: { userAccountId: number }) {
     const { userAccountId } = params;
 
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: { userAccountId },
     });
 
@@ -492,7 +501,7 @@ export class UserAuthService {
 
   async getProfile(token: string): Promise<UserEntity> {
     const { sub } = await this.getJwtPayload(token);
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: { userAccountId: parseInt(sub) },
       include: {
         userAccount: true,

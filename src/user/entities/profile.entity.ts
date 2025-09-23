@@ -38,6 +38,7 @@ export class ProfileEntity implements $Prisma.User {
   @Type(() => ProfileEntityUserAccountEntity)
   userAccount!: ProfileEntityUserAccountEntity;
 
+  id!: number;
   isEnabled!: boolean;
   isRoot!: boolean;
   userAccountId!: number;

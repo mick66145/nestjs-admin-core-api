@@ -121,13 +121,11 @@ export class UserController {
 
   @ApiOperation({ summary: '取得單一後台使用者資料' })
   @ApiOkResponse({ type: UserEntity })
-  @Get(':userAccountId')
-  async findOne(@Param('userAccountId', ParseIntPipe) userAccountId: number) {
+  @Get(':userId')
+  async findOne(@Param('userId', ParseIntPipe) userId: number) {
     const where: Prisma.UserWhereUniqueInput = {
-      userAccountId,
+      id: userId,
     };
-
-    await this.userService.existsOrThrow(where);
 
     return plainToInstance(
       UserEntity,
@@ -137,17 +135,16 @@ export class UserController {
 
   @ApiOperation({ summary: '修改後台使用者資料' })
   @ApiOkResponse({ type: UserEntity })
-  @Patch(':userAccountId')
+  @Patch(':userId')
   async update(
-    @Param('userAccountId', ParseIntPipe) userAccountId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const { role } = updateUserDto;
 
     const where: Prisma.UserWhereUniqueInput = {
-      userAccountId,
+      id: userId,
     };
-    await this.userService.existsOrThrow(where);
 
     // 檢查角色
     if (role) {
@@ -162,46 +159,45 @@ export class UserController {
 
   @ApiOperation({ summary: '刪除後台使用者資料' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':userAccountId')
-  async remove(@Param('userAccountId', ParseIntPipe) userAccountId: number) {
+  @Delete(':userId')
+  async remove(@Param('userId', ParseIntPipe) userId: number) {
     const where: Prisma.UserWhereUniqueInput = {
-      userAccountId,
+      id: userId,
     };
-
-    await this.userService.existsOrThrow(where);
 
     await this.userService.remove(where);
   }
 
   @ApiOperation({ summary: '重置後台使用者密碼' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post(':userAccountId/action/reset-password')
+  @Post(':userId/action/reset-password')
   async resetPassword(
-    @Param('userAccountId', ParseIntPipe) userAccountId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() resetPassword: ResetPasswordDto,
   ) {
     const where: Prisma.UserWhereUniqueInput = {
-      userAccountId,
+      id: userId,
     };
-
-    await this.userService.existsOrThrow(where);
+    const { userAccountId } = await this.userService.findFirstOrThrow(where);
 
     await this.userAccountService.resetPassword(userAccountId, resetPassword);
   }
 
   @ApiOperation({ summary: '驗證使用者權限' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post(':userAccountId/action/check-permission')
+  @Post(':userId/action/check-permission')
   async checkPermission(
-    @Param('userAccountId', ParseIntPipe) userAccountId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() checkPermissionDto: CheckPermissionDto,
   ) {
     const { permissions } = checkPermissionDto;
-
-    const user = await this.userService.findFirstOrThrow({ userAccountId });
+    const where: Prisma.UserWhereUniqueInput = {
+      id: userId,
+    };
+    const user = await this.userService.findFirstOrThrow(where);
 
     if (user.isRoot) return;
 
-    await this.permissionService.checkByUser(userAccountId, permissions);
+    await this.permissionService.checkByUser(user.userAccountId, permissions);
   }
 }

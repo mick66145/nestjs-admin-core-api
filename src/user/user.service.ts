@@ -173,11 +173,14 @@ export class UserService {
 
     return this.prisma
       .$transaction(async (tx) => {
+        const user = await tx.user.findUnique({ where });
+        if (!user) {
+          abort(`找無此${entityName}`, HttpStatus.NOT_FOUND);
+        }
         const result = await tx.user.update({ where, data, include });
-
         if (role !== undefined) {
           await this.userRoleService.updateRole({
-            userAccountId: where.userAccountId!,
+            userAccountId: user.userAccountId,
             role: [role],
           });
         }
@@ -222,9 +225,11 @@ export class UserService {
   async getRolePermissions(
     userAccountId: number,
   ): Promise<UserRolePermissionEntity> {
-    await this.existsOrThrow({ userAccountId });
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: { userAccountId },
+    });
 
-    const user = (await this.findOne({ userAccountId }))!;
+    await this.existsOrThrow({ id: user.id });
 
     const getPermissions = async () => {
       if (user.isRoot) {

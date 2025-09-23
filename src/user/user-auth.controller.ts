@@ -133,7 +133,7 @@ export class UserAuthController {
 
     // 3. 更新後台使用者資訊
     await this.userService.update(
-      { userAccountId: user.userAccountId },
+      { id: user.id },
       {
         isValid: true,
       },
@@ -211,9 +211,7 @@ export class UserAuthController {
     const { payload } = authData;
 
     const user = await this.userService.findOne(
-      {
-        userAccountId: parseInt(payload.sub),
-      },
+      { id: parseInt(payload.sub) },
       {
         userAccount: true,
       },
@@ -233,9 +231,7 @@ export class UserAuthController {
     const { payload } = authData;
 
     const user = await this.userService.update(
-      {
-        userAccountId: parseInt(payload.sub),
-      },
+      { id: parseInt(payload.sub) },
       updateProfileDto,
       {
         userAccount: true,
