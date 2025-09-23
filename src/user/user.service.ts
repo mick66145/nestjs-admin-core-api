@@ -25,8 +25,7 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto, include?: Prisma.UserInclude) {
-    const { account, password, name, email, phone, isValid, isEnabled, role } =
-      createUserDto;
+    const { account, password, role, ...userData } = createUserDto;
 
     await this.userAuthService.checkAccountExists(account);
 
@@ -43,11 +42,7 @@ export class UserService {
         });
 
         const data: Prisma.UserCreateInput = {
-          phone,
-          email,
-          name,
-          isValid,
-          isEnabled,
+          ...userData,
           userAccount: { connect: user },
         };
 
@@ -60,7 +55,7 @@ export class UserService {
   }
 
   async createRoot(dto: CreateRootUserDto, include?: Prisma.UserInclude) {
-    const { account, password, name, email, phone, isValid, isEnabled } = dto;
+    const { account, password, ...userData } = dto;
     const isRoot = true;
 
     await this.userAuthService.checkAccountExists(account);
@@ -73,11 +68,7 @@ export class UserService {
         });
 
         const data: Prisma.UserCreateInput = {
-          phone,
-          email,
-          name,
-          isValid,
-          isEnabled,
+          ...userData,
           isRoot,
           userAccount: { connect: user },
         };
@@ -161,14 +152,10 @@ export class UserService {
     updateUserDto: UpdateUserDto,
     include?: Prisma.UserInclude,
   ) {
-    const { name, email, phone, isValid, isEnabled, role } = updateUserDto;
+    const { role, ...userData } = updateUserDto;
 
     const data: Prisma.UserUpdateInput = {
-      name,
-      email,
-      phone,
-      isValid,
-      isEnabled,
+      ...userData,
     };
 
     return this.prisma
