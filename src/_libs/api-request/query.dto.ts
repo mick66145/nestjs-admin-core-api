@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsOptional, IsInt, IsPositive, Min } from 'class-validator';
 import { TransformFalsyToUndefined } from '../transform/transform-to';
 
@@ -8,6 +9,7 @@ export class PaginationQueryDto {
   @IsInt()
   @Min(0)
   @TransformFalsyToUndefined()
+  @Type(() => Number)
   page: number = 0;
 
   @ApiPropertyOptional({ description: '每頁數量', default: 10 })
@@ -15,5 +17,6 @@ export class PaginationQueryDto {
   @IsInt()
   @IsPositive()
   @TransformFalsyToUndefined()
+  @Type(() => Number)
   limit: number = 10;
 }
