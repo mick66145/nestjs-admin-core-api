@@ -84,9 +84,6 @@ export class UserEntity {
   @Expose()
   isEnabled!: boolean;
 
-  @ApiProperty({ description: '是否為超級管理員帳號' })
-  @Expose()
-  isRoot!: boolean;
 
   @ApiProperty({ type: UserAccountEntity })
   @Expose()
@@ -98,4 +95,6 @@ export class UserEntity {
   role() {
     return head(this.userAccount.userAccountHasRole)?.role ?? null;
   }
+
+  isRoot!: boolean;
 }

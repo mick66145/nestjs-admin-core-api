@@ -1,14 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import * as $Prisma from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiSchema } from 'src/_libs/swagger/api-schema';
 import { UserAccountEntity } from './user.entity';
+import { User } from '@prisma/client';
 
 @Exclude()
 export class ProfileEntityUserAccountEntity extends UserAccountEntity {}
 
 @Exclude()
-export class ProfileEntity implements $Prisma.User {
+export class ProfileEntity implements User {
+  @ApiProperty({ example: 1 })
+  @Expose()
+  id!: number;
+
   @ApiProperty()
   @Expose()
   createdAt!: Date;
@@ -33,14 +37,16 @@ export class ProfileEntity implements $Prisma.User {
   @Expose()
   isValid!: boolean;
 
+  @ApiProperty({ description: '是否為超級管理員帳號' })
+  @Expose()
+  isRoot!: boolean;
+
   @ApiProperty({ type: ProfileEntityUserAccountEntity })
   @Expose()
   @Type(() => ProfileEntityUserAccountEntity)
   userAccount!: ProfileEntityUserAccountEntity;
 
-  id!: number;
   isEnabled!: boolean;
-  isRoot!: boolean;
   userAccountId!: number;
 }
 
