@@ -16,10 +16,6 @@ export class UploadEntity implements FileStorage {
   @Expose()
   updatedAt!: Date;
 
-  @ApiProperty({ description: '路徑', example: 'images' })
-  @Expose()
-  path!: string;
-
   @ApiProperty({ description: '原始檔案名稱', example: 'IMG_0876' })
   @Expose()
   originFileName!: string;
@@ -40,10 +36,8 @@ export class UploadEntity implements FileStorage {
   @Expose()
   fileUrl!: string;
 
-  @ApiProperty({ description: '上傳時的檔案驅動', example: 'local' })
-  @Expose()
+  path!: string;
   driver!: string;
-
   filePath!: string;
   deletedAt!: Date | null;
 }
