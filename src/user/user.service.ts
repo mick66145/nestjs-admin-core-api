@@ -89,7 +89,7 @@ export class UserService {
     const { where, orderBy, include } = params;
 
     return this.prisma.user.findMany({
-      where,
+      where: { ...where, isRoot: false },
       orderBy,
       include,
     });
@@ -108,7 +108,7 @@ export class UserService {
     return this.prisma.user.pagination({
       page,
       limit,
-      where,
+      where: { ...where, isRoot: false },
       orderBy,
       include,
     });
