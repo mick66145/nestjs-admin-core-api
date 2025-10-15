@@ -11,6 +11,7 @@ services:
       - ./app/dist:/app/dist
       - ./app/prisma_client:/app/node_modules/.prisma
       - ./app_logs:/app/logs
+      - ./app/storage:/app/storage
     networks:
       - app_network
 
