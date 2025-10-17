@@ -118,6 +118,20 @@ export class UserService {
     return this.prisma.user.findUnique({ where, include });
   }
 
+  async findByAccountIdOrThrow(params: { userAccountId: number }) {
+    const { userAccountId } = params;
+    const user = await this.prisma.user.findFirst({
+      where: {
+        userAccountId,
+      },
+    });
+
+    if (user === null) {
+      abort('找無此後台使用者', HttpStatus.NOT_FOUND);
+    }
+    return user;
+  }
+
   async findByAccountOrThrow(params: { account: string }) {
     const { account } = params;
 

@@ -3,19 +3,23 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { abort } from 'src/_libs/api-response/abort.util';
 import { IS_PUBLIC_KEY } from './decorators/user-auth-public.decorator';
 import { AUTH_DATA } from './decorators/auth-data.decorator';
 import { AuthDataConfig } from './user-auth.interface';
 import { UserAuthService } from './user-auth.service';
+import { UserService } from './user.service';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private userAuthService: UserAuthService,
+    private userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,6 +42,13 @@ export class UserAuthGuard implements CanActivate {
     }
 
     const payload = await this.userAuthService.getJwtPayload(token);
+    const userAccountId = parseInt(payload.sub, 10);
+    const user = await this.userService.findByAccountIdOrThrow({
+      userAccountId,
+    });
+    if (!user.isEnabled) {
+      abort('找無此後台使用者', HttpStatus.NOT_FOUND);
+    }
 
     request[AUTH_DATA] = {
       payload,
