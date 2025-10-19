@@ -1,0 +1,68 @@
+{
+  "name": "自動化更新功能開發流程",
+  "description": "自動化更新現有功能的流程",
+  "steps": [
+    {
+      "name": "理解更新需求",
+      "run": [
+        "echo '閱讀更新需求文件，明確需要修改或擴展的現有功能。'"
+      ]
+    },
+    {
+      "name": "切換/建立分支",
+      "run": [
+        "git checkout dev && git pull origin dev",
+        "echo '請輸入新功能分支名稱（如 fix/your-bug-fix）'",
+        "git checkout -b [update-type]/your-feature-name"
+      ]
+    },
+    {
+      "name": "識別相關檔案",
+      "run": [
+        "echo '根據更新需求，識別需要修改的 DTOs、Entities、Service、Controller 或文件檔案。'"
+      ]
+    },
+    {
+      "name": "修改資料模型/DTOs",
+      "run": [
+        "echo '根據需求修改現有的 Prisma Schema 模型、Entity 或 DTO 檔案，新增、修改或刪除欄位，並更新對應的 `@ApiProperty` 和 `class-validator` 裝飾器。如果欄位變為可選，使用 `PartialType` 和 `@IsOptional()`。'"
+      ]
+    },
+    {
+      "name": "更新業務邏輯服務",
+      "run": [
+        "echo '修改現有的 Service 檔案，調整業務邏輯以適應新的資料模型或功能行為。'"
+      ]
+    },
+    {
+      "name": "更新控制器介面",
+      "run": [
+        "echo '修改現有的 Controller 檔案，調整 API 介面，並確保 `ValidationPipe` 正確套用。'"
+      ]
+    },
+    {
+      "name": "更新功能文件",
+      "run": [
+        "echo '更新現有功能文件，反映功能、API 介面和使用方式的變更。'"
+      ]
+    },
+    {
+      "name": "撰寫/更新 E2E 測試",
+      "run": [
+        "echo '更新或新增 E2E 測試案例，涵蓋更新後的功能和新欄位的邏輯。'"
+      ]
+    },
+    {
+      "name": "執行 E2E 測試",
+      "run": [
+        "npm run test:e2e"
+      ]
+    },
+    {
+      "name": "處理測試失敗",
+      "run": [
+        "echo '根據測試報告修復程式碼、更新測試案例或調整測試環境配置。'"
+      ]
+    }
+  ]
+}

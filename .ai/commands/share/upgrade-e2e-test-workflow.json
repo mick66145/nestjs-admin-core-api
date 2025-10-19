@@ -1,0 +1,30 @@
+{
+  "name": "自動化更新E2E Test",
+  "description": "E2E 測試流程，用於不同功能模組（測試修正與執行）。",
+  "inputs": {
+    "testFile": {
+      "description": "要執行的 E2E 測試檔案路徑",
+      "default": "test/example.e2e-spec.ts"
+    },
+    "jestConfig": {
+      "description": "Jest E2E 測試設定檔路徑",
+      "default": "test/jest-e2e.json"
+    }
+  },
+  "steps": [
+    {
+      "name": "調整並驗證測試檔案",
+      "description": "檢查與修正測試內容，確保符合業務邏輯。",
+      "run": [
+        "code ${inputs.testFile}"
+      ]
+    },
+    {
+      "name": "執行 E2E 測試",
+      "description": "執行指定的 E2E 測試檔案以驗證結果。",
+      "run": [
+        "yarn test:e2e ${inputs.testFile} --config ${inputs.jestConfig}"
+      ]
+    }
+  ]
+}
