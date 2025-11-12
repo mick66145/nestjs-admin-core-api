@@ -489,7 +489,69 @@ export class DatasetKeyController {
 
 ---
 
-## 7. 其他自訂規範
+## 7. 關聯資源驗證規範
+
+### 7.1 關聯資源必須先驗證再關聯
+
+在 Service 層處理包含關聯資源（foreign key）的操作時，**必須遵循以下步驟**：
+
+1. **先驗證關聯資源存在**：使用相關服務的 `findOne()` 方法驗證被關聯的資源是否存在
+2. **再執行關聯操作**：確認關聯資源存在後，才能在 `Prisma` 操作中使用 `connect` 進行關聯
+
+#### 範例（Property Service）
+
+```typescript
+// src/property/property.service.ts
+async create(dto: CreatePropertyDto) {
+  const {
+    propertyUsageCategory: propertyUsageCategoryDto,
+    propertyUsageZone: propertyUsageZoneDto,
+    ...propertyData
+  } = dto;
+
+  // 步驟 1: 先驗證關聯資源存在（會拋出 NOT_FOUND 異常如果不存在）
+  const propertyUsageCategory =
+    await this.propertyUsageCategoryService.findOne(
+      propertyUsageCategoryDto.id,
+    );
+  const propertyUsageZone = await this.propertyUsageZoneService.findOne(
+    propertyUsageZoneDto.id,
+  );
+
+  // 步驟 2: 關聯資源已驗證，安全地執行 connect 操作
+  const data: Prisma.PropertyCreateInput = {
+    ...propertyData,
+    propertyUsageZone: {
+      connect: { id: propertyUsageZone.id },
+    },
+    propertyUsageCategory: {
+      connect: { id: propertyUsageCategory.id },
+    },
+  };
+
+  // 執行資料庫操作
+  const orm = await this.prisma.$transaction(async (tx) => {
+    return await tx.property.create({
+      data,
+      include: this.include,
+    });
+  }).catch(catchPrismaErrorOrThrow(entityName));
+
+  return plainToInstance(PropertyEntity, orm);
+}
+```
+
+#### 規則重點
+
+- **驗證先行**：永遠不能假設關聯資源存在，必須主動驗證
+- **服務注入**：在 Service 的 `constructor` 中注入關聯的服務（如 `PropertyUsageCategoryService`）
+- **錯誤處理**：`findOne()` 方法若資源不存在會拋出 `HttpException(NOT_FOUND)`，這會自動傳播至 Controller 並返回 404 錯誤
+- **事務保護**：驗證後的操作應包含在 `$transaction` 中，確保數據一致性
+- **適用場景**：此規則適用於所有涉及外鍵關聯的 create/update 操作
+
+---
+
+## 8. 其他自訂規範
 
 > 請依照各功能模組需求，於本區補充專案特有的 code style 或最佳實踐。
 

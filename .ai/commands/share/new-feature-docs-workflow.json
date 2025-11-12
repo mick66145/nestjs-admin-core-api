@@ -15,6 +15,15 @@
       ]
     },
     {
+      "name": "讀取規範",
+      "run": [
+        "cat ./docs/code-style-guide.md",
+        "cat ./docs/development-guidelines.md",
+        "cat ./docs/git.md",
+        "cat ./docs/testing-guidelines.md"
+      ]
+    },
+    {
       "name": "文件撰寫",
       "description": "撰寫功能說明文件。",
       "tasks": [
