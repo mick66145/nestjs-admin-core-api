@@ -3,6 +3,17 @@
   "description": "用於新功能需求討論標準化流程。",
   "steps": [
     {
+      "name": "讀取規範",
+      "run": [
+        "cat ./docs/code-style-guide.md",
+        "cat ./docs/development-guidelines.md",
+        "cat ./docs/git.md",
+        "cat ./docs/testing-guidelines.md",
+        "cat ./docs/sa-documentation-style-guide.md",
+        "cat ./docs/sd-documentation-style-guide.md"
+      ]
+    },
+    {
       "name": "需求分析與討論",
       "description": "扮演PM/產品經理和工程師兩個角色，討論功能需求，釐清所有細節和限制。",
       "tasks": [
@@ -12,15 +23,6 @@
         "核心目標與業務價值",
         "功能需求",
         "測試建議與驗收標準"
-      ]
-    },
-    {
-      "name": "讀取規範",
-      "run": [
-        "cat ./docs/code-style-guide.md",
-        "cat ./docs/development-guidelines.md",
-        "cat ./docs/git.md",
-        "cat ./docs/testing-guidelines.md"
       ]
     },
     {

@@ -37,6 +37,15 @@
 
 ## 文件撰寫
 
+### 必讀文件
+
+在進行文件撰寫前，請務必先閱讀以下文件風格指南：
+
+- **系統架構文件風格指南**: [sa-documentation-style-guide.md](./sa-documentation-style-guide.md)
+- **系統設計文件風格指南**: [sd-documentation-style-guide.md](./sd-documentation-style-guide.md)
+
+### 一般規範
+
 - 所有公開的類別、方法、函式都應該有清晰的 JSDoc 或 TypeScript Doc 註釋，說明其用途、參數、返回值和可能拋出的錯誤。
 - 複雜的業務邏輯或演算法應在程式碼中添加適當的註釋，解釋其實現細節。
 - API 文件應保持更新，與實際程式碼行為一致。
