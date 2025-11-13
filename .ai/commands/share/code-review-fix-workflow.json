@@ -1,0 +1,234 @@
+{
+  "name": "Code Review 修復工作流程",
+  "description": "根據 Code Review 結果，系統化地修復發現的問題。此流程應在 Code Review 工作流程之後執行。",
+  "prerequisites": [
+    "已完成 Code Review 並產生報告",
+    "已識別所有需要修復的問題",
+    "已閱讀開發規範文件"
+  ],
+  "steps": [
+    {
+      "name": "建立待辦清單",
+      "description": "使用 TodoWrite 工具建立所有需要修復的項目清單",
+      "tasks": [
+        "根據 Code Review 報告，將所有問題轉換為待辦事項",
+        "按優先級排序：🚨 嚴重錯誤 > ⚠️ 違反規範 > ⚠️ 其他問題",
+        "每個待辦事項應包含清晰的描述和可操作的目標"
+      ],
+      "example": [
+        "修復 service.ts create 方法中關聯資源 ID 互換錯誤",
+        "修復 service.ts update 方法中關聯資源 ID 互換錯誤",
+        "在 find-all-query.dto.ts 新增 orderBy 和 ids 參數",
+        "修復 service.ts 實作動態排序功能"
+      ]
+    },
+    {
+      "name": "修復嚴重錯誤",
+      "description": "優先處理所有 🚨 標記的嚴重錯誤",
+      "priority": "HIGH",
+      "common_fixes": [
+        {
+          "issue": "關聯資源 ID 互換錯誤",
+          "pattern": "變數名稱與實際使用的 ID 不一致",
+          "fix_steps": [
+            "找到錯誤的 connect 語句",
+            "確認正確的變數名稱和 ID 對應關係",
+            "使用 Edit 工具修正",
+            "更新待辦清單狀態為 completed"
+          ],
+          "example": {
+            "wrong": "propertyUsageZone: { connect: { id: propertyUsageCategory.id } }",
+            "correct": "propertyUsageZone: { connect: { id: propertyUsageZone.id } }"
+          }
+        },
+        {
+          "issue": "資料庫操作邏輯錯誤",
+          "pattern": "where 條件、join 關係、transaction 範圍等邏輯錯誤",
+          "fix_steps": [
+            "仔細檢查資料庫操作邏輯",
+            "對照 Prisma schema 確認關係定義",
+            "修正錯誤的邏輯",
+            "更新待辦清單"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "修復違反開發規範的問題",
+      "description": "處理所有 ⚠️ 標記的規範違反問題",
+      "priority": "MEDIUM",
+      "categories": [
+        {
+          "category": "Query DTO 規範",
+          "fixes": [
+            {
+              "issue": "缺少 orderBy 參數",
+              "fix_steps": [
+                "在 Query DTO 中新增 orderBy 參數",
+                "使用 @ApiPropertyOptional 裝飾器",
+                "添加 example 和 description",
+                "使用 @IsOptional 和 @IsString 驗證器"
+              ],
+              "code_template": "@ApiPropertyOptional({\n  example: 'id:desc',\n  description: '排序; 欄位:desc|asc，兩個欄位以上用,分隔',\n})\n@IsOptional()\n@IsString()\norderBy?: string;"
+            },
+            {
+              "issue": "缺少 ids 參數",
+              "fix_steps": [
+                "導入 IntIdsQuery 裝飾器和 entityName",
+                "在 Query DTO 中新增 ids 參數",
+                "使用 @IntIdsQuery(entityName) 裝飾器"
+              ],
+              "code_template": "import { IntIdsQuery } from 'src/_libs/api-request/query.decorator';\nimport { entityName } from '../模組名稱.interface';\n\n@IntIdsQuery(entityName)\nids?: number[];"
+            },
+            {
+              "issue": "Enum 欄位 example 值不符規範",
+              "fix_steps": [
+                "找到所有 Enum 類型的 @ApiPropertyOptional",
+                "將 example 值改為 null（除非有特定需求）"
+              ],
+              "code_template": "@ApiPropertyOptional({\n  description: '狀態篩選',\n  enum: StatusEnum,\n  example: null, // 改為 null\n})"
+            }
+          ]
+        },
+        {
+          "category": "Service 規範",
+          "fixes": [
+            {
+              "issue": "未實作動態排序",
+              "fix_steps": [
+                "導入 $PrismaOrderByInput",
+                "在 findAll 方法中解構 orderBy 參數",
+                "使用 queryOrderBy 方法處理",
+                "在 pagination 查詢中使用 defaultOrderBy"
+              ],
+              "code_template": "import { $PrismaOrderByInput } from 'src/libs/prisma/order-by-input';\n\nconst { orderBy } = query;\nconst defaultOrderBy: Prisma.ModelOrderByWithRelationInput[] =\n  orderBy !== undefined\n    ? $PrismaOrderByInput.queryOrderBy<Prisma.ModelOrderByWithRelationInput>(orderBy)\n    : [{ id: 'desc' }];\n\nconst { result, ...meta } = await this.prisma.model.pagination({\n  orderBy: defaultOrderBy,\n  ...\n});"
+            },
+            {
+              "issue": "未使用規範的關鍵字搜尋工具函數",
+              "fix_steps": [
+                "導入 $PrismaWhereInput",
+                "使用 whereKeywordInput 方法建立搜尋條件",
+                "使用 mergeWhereInput 方法合併條件"
+              ],
+              "code_template": "import { $PrismaWhereInput } from 'src/libs/prisma/where-input';\n\nconst whereOR: Prisma.ModelWhereInput[] = [];\nif (keyword?.length) {\n  const keywordWhere = $PrismaWhereInput.whereKeywordInput<Prisma.ModelWhereInput>(\n    ['field1', 'field2', 'field3'],\n    keyword,\n  );\n  $PrismaWhereInput.mergeWhereInput(whereOR, {\n    OR: [...keywordWhere],\n  });\n}\nif (whereOR.length) where.OR = whereOR;"
+            },
+            {
+              "issue": "未支援 IDs 篩選",
+              "fix_steps": [
+                "在 findAll 方法中解構 ids 參數",
+                "添加 ids 篩選邏輯：if (ids?.length) where.id = { in: ids };"
+              ]
+            }
+          ]
+        },
+        {
+          "category": "DTO 規範",
+          "fixes": [
+            {
+              "issue": "缺少 description",
+              "fix_steps": [
+                "找到缺少 description 的 @ApiProperty/@ApiPropertyOptional",
+                "添加適當的中文描述"
+              ],
+              "code_template": "@ApiProperty({\n  description: '欄位描述',\n  type: DtoClass,\n})"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "修復其他問題",
+      "description": "處理建議改善的問題",
+      "priority": "LOW",
+      "common_fixes": [
+        {
+          "issue": "註釋風格不一致",
+          "fix": "統一使用 JSDoc /** */ 風格"
+        },
+        {
+          "issue": "缺少 JSDoc 註釋",
+          "fix": "為公開方法添加 JSDoc 註釋"
+        },
+        {
+          "issue": "Nullable 欄位定義不明確",
+          "fix": "確認 Prisma schema 並正確標註 nullable 欄位"
+        }
+      ]
+    },
+    {
+      "name": "驗證修復結果",
+      "description": "確認所有修復都正確且符合規範",
+      "tasks": [
+        "檢查所有待辦事項都已標記為 completed",
+        "確認修改的檔案符合程式碼風格規範",
+        "確認沒有引入新的錯誤",
+        "如有測試，執行相關測試確保功能正常"
+      ]
+    },
+    {
+      "name": "產生修復報告",
+      "description": "總結修復內容並提供清單",
+      "format": {
+        "sections": [
+          {
+            "title": "✅ 所有修復完成",
+            "content": "總結完成的修復工作"
+          },
+          {
+            "title": "🚨 嚴重錯誤（已修復）",
+            "content": "列出修復的嚴重錯誤，包含檔案位置和修復說明"
+          },
+          {
+            "title": "⚠️ 違反開發規範（已修復）",
+            "content": "列出修復的規範違反問題"
+          },
+          {
+            "title": "⚠️ 其他問題（已修復）",
+            "content": "列出修復的其他問題"
+          },
+          {
+            "title": "📝 修改檔案清單",
+            "content": "列出所有被修改的檔案及其修改內容"
+          }
+        ]
+      }
+    }
+  ],
+  "common_patterns": {
+    "關聯資源 ID 錯誤": {
+      "description": "變數名稱與實際使用的 ID 不一致",
+      "detection": "檢查 connect: { id: xxx } 中的 xxx 是否與變數名稱一致",
+      "fix": "確保使用正確的變數名稱對應的 id"
+    },
+    "動態排序未實作": {
+      "description": "寫死 orderBy 而非使用動態排序",
+      "detection": "查看 pagination 中的 orderBy 是否為固定值",
+      "fix": "導入 $PrismaOrderByInput 並使用 queryOrderBy 方法"
+    },
+    "關鍵字搜尋未使用工具函數": {
+      "description": "手動構建 contains 查詢而非使用工具函數",
+      "detection": "查看是否有手動 push 多個 contains 條件",
+      "fix": "使用 $PrismaWhereInput.whereKeywordInput 方法"
+    },
+    "Query DTO 缺少標準參數": {
+      "description": "缺少 orderBy 或 ids 參數",
+      "detection": "檢查 Query DTO 是否繼承 PaginationQueryDto 並包含標準參數",
+      "fix": "添加 @IntIdsQuery 和 orderBy 參數"
+    }
+  },
+  "best_practices": [
+    "每次修復後立即更新待辦清單狀態",
+    "使用 Edit 工具而非 Write 工具修改現有檔案",
+    "保持修改的最小化，只修復必要的問題",
+    "確保修改後的程式碼符合專案的格式化規範（2 空格、單引號等）",
+    "對於複雜的修復，先修復嚴重錯誤再處理規範問題",
+    "修復完成後提供清晰的總結報告"
+  ],
+  "notes": [
+    "此工作流程應該在 code-review-workflow.json 之後執行",
+    "修復過程中應嚴格遵循 docs/code-style-guide.md 的規範",
+    "如果遇到不確定的問題，應詢問使用者而非自行決定",
+    "所有修復都應該有明確的理由和規範依據",
+    "修復完成後應產生結構化的報告讓使用者了解所有變更"
+  ]
+}

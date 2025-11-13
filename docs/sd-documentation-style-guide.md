@@ -258,6 +258,37 @@ interface User {
 - 使用有意義的變數名稱
 - 遵循專案的代碼風格規範
 
+**TypeScript 註釋風格：**
+
+在 API 文檔中的 TypeScript 介面定義，必須使用 JSDoc 風格的 `/** */` 註釋：
+
+```typescript
+// ✅ 正確：使用 JSDoc 風格
+interface CreateUserDto {
+  /** 使用者名稱（必填） */
+  name: string;
+  /** 電子郵件地址（必填） */
+  email: string;
+  /** 年齡（可選） */
+  age?: number;
+}
+
+enum UserStatus {
+  /** 啟用 */
+  ACTIVE = 'ACTIVE',
+  /** 停用 */
+  INACTIVE = 'INACTIVE',
+}
+
+// ❌ 錯誤：不要使用三斜線註釋
+interface CreateUserDto {
+  /// 使用者名稱
+  name: string;
+  /// 電子郵件地址
+  email: string;
+}
+```
+
 ### 6.3 清單格式
 
 **無序清單：**

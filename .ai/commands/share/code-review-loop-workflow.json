@@ -1,0 +1,229 @@
+{
+  "name": "Code Review 循環工作流程",
+  "description": "循環執行 Code Review 和修復，直到程式碼符合所有開發規範。此流程會自動重複執行 review 和 fix，直到沒有問題為止。",
+  "steps": [
+    {
+      "name": "初始化",
+      "description": "準備開始循環式 Code Review 流程",
+      "tasks": [
+        "詢問使用者要檢查哪個模組",
+        "說明此流程會循環執行 review 和 fix 直到沒有問題",
+        "列出 src/ 目錄下的所有模組供參考"
+      ]
+    },
+    {
+      "name": "第一輪：Code Review",
+      "description": "執行完整的 Code Review 流程",
+      "workflow": "code-review-workflow",
+      "tasks": [
+        "讀取開發規範文件：",
+        "  - docs/code-style-guide.md",
+        "  - docs/development-guidelines.md",
+        "  - docs/testing-guidelines.md",
+        "讀取指定模組的所有檔案：",
+        "  - DTO 檔案 (dto/*.dto.ts)",
+        "  - Entity 檔案 (entities/*.entity.ts)",
+        "  - Service 檔案 (*.service.ts)",
+        "  - Controller 檔案 (*.controller.ts)",
+        "  - Data Aggregator 檔案 (*.data-aggregator.ts)",
+        "  - Interface 檔案 (*.interface.ts)",
+        "依照開發規範逐項檢查程式碼：",
+        "  - 🚨 嚴重錯誤（邏輯錯誤、資料庫操作錯誤等）",
+        "  - ⚠️ 違反開發規範（DTO、Service、Controller 規範等）",
+        "  - ⚠️ 其他問題（註釋、格式化等）",
+        "產生詳細的 Review 報告"
+      ]
+    },
+    {
+      "name": "評估問題嚴重程度",
+      "description": "分析 Review 結果，決定是否需要修復",
+      "decision": {
+        "if_no_issues": {
+          "action": "跳到步驟：完成流程",
+          "message": "✅ 恭喜！程式碼已符合所有開發規範，無需修復。"
+        },
+        "if_has_issues": {
+          "action": "繼續下一步驟",
+          "message": "發現問題，準備進行修復..."
+        }
+      }
+    },
+    {
+      "name": "第一輪：修復問題",
+      "description": "執行完整的修復流程",
+      "workflow": "code-review-fix-workflow",
+      "tasks": [
+        "使用 TodoWrite 建立所有待修復項目清單",
+        "按優先級修復：🚨 嚴重錯誤 > ⚠️ 違反規範 > ⚠️ 其他問題",
+        "修復嚴重錯誤：",
+        "  - 關聯資源 ID 互換錯誤",
+        "  - 資料庫操作邏輯錯誤",
+        "  - 關聯資源驗證錯誤",
+        "修復違反開發規範的問題：",
+        "  - Query DTO 規範（orderBy、ids、keyword）",
+        "  - Service 規範（動態排序、關鍵字搜尋、IDs 篩選）",
+        "  - DTO 規範（description、裝飾器、型別定義）",
+        "修復其他問題：",
+        "  - 註釋風格",
+        "  - JSDoc 註釋",
+        "確認所有待辦事項都已完成",
+        "產生修復報告"
+      ]
+    },
+    {
+      "name": "第二輪：Code Review",
+      "description": "再次執行 Code Review 確認修復結果",
+      "workflow": "code-review-workflow",
+      "tasks": [
+        "重新讀取所有已修復的檔案",
+        "再次執行完整的 Code Review 檢查",
+        "產生新的 Review 報告",
+        "對比前後差異，確認問題是否已解決"
+      ]
+    },
+    {
+      "name": "評估是否需要再次修復",
+      "description": "檢查第二輪 Review 結果",
+      "decision": {
+        "if_no_issues": {
+          "action": "跳到步驟：完成流程",
+          "message": "✅ 所有問題已修復完成！"
+        },
+        "if_has_minor_issues": {
+          "action": "繼續到第二輪修復",
+          "message": "發現少量殘留問題，進行第二輪修復..."
+        },
+        "if_has_new_issues": {
+          "action": "繼續到第二輪修復",
+          "message": "⚠️ 發現新問題或未完全修復的問題，繼續修復..."
+        }
+      }
+    },
+    {
+      "name": "第二輪：修復殘留問題",
+      "description": "修復第二輪 Review 發現的問題",
+      "workflow": "code-review-fix-workflow",
+      "tasks": [
+        "建立新的待辦清單",
+        "修復所有殘留問題",
+        "確認修復完成"
+      ]
+    },
+    {
+      "name": "第三輪：最終 Code Review",
+      "description": "最終確認所有問題都已解決",
+      "workflow": "code-review-workflow",
+      "tasks": [
+        "執行最後一次完整的 Code Review",
+        "確認所有問題都已修復",
+        "產生最終報告"
+      ]
+    },
+    {
+      "name": "評估最終結果",
+      "description": "決定是否完成或需要繼續循環",
+      "decision": {
+        "if_no_issues": {
+          "action": "跳到步驟：完成流程",
+          "message": "✅ 完美！所有問題都已解決。"
+        },
+        "if_still_has_issues": {
+          "action": "詢問使用者是否繼續",
+          "message": "⚠️ 仍有問題存在，是否需要繼續下一輪修復？",
+          "note": "通常三輪後仍有問題，可能需要人工介入或重新評估規範"
+        }
+      }
+    },
+    {
+      "name": "完成流程",
+      "description": "產生最終總結報告",
+      "tasks": [
+        "統計執行的輪數",
+        "總結修復的問題數量和類型",
+        "列出所有被修改的檔案",
+        "提供程式碼品質報告"
+      ],
+      "final_report": {
+        "sections": [
+          {
+            "title": "🎉 Code Review 循環完成",
+            "content": "顯示完成訊息和執行輪數"
+          },
+          {
+            "title": "📊 統計資訊",
+            "content": [
+              "執行輪數：X 輪",
+              "修復問題總數：",
+              "  - 🚨 嚴重錯誤：X 個",
+              "  - ⚠️ 違反規範：X 個",
+              "  - ⚠️ 其他問題：X 個"
+            ]
+          },
+          {
+            "title": "📝 修改檔案清單",
+            "content": "列出所有被修改的檔案及其修改摘要"
+          },
+          {
+            "title": "✅ 程式碼品質確認",
+            "content": [
+              "所有嚴重錯誤已修復",
+              "符合專案開發規範",
+              "程式碼風格一致",
+              "文檔註釋完整"
+            ]
+          },
+          {
+            "title": "🚀 後續建議",
+            "content": [
+              "執行單元測試確保功能正常",
+              "執行 E2E 測試驗證整體流程",
+              "考慮提交 Git Commit",
+              "更新相關文檔"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "loop_logic": {
+    "description": "循環邏輯說明",
+    "max_iterations": 3,
+    "max_iterations_note": "預設最多執行 3 輪，避免無限循環",
+    "exit_conditions": [
+      "Code Review 沒有發現任何問題",
+      "達到最大迭代次數（3 輪）",
+      "使用者選擇停止"
+    ],
+    "iteration_pattern": [
+      "第 N 輪：Code Review → 發現問題 → 修復問題",
+      "第 N+1 輪：Code Review → 檢查修復結果",
+      "重複直到沒有問題或達到上限"
+    ]
+  },
+  "best_practices": [
+    "第一輪 Review 應該最詳細，記錄所有問題",
+    "每輪修復後都要完整 Review，確保沒有遺漏",
+    "優先修復嚴重錯誤，再處理規範問題",
+    "保持修改的原子性，每次只修復一個明確的問題",
+    "修復後立即更新待辦清單狀態",
+    "如果三輪後仍有問題，建議人工介入檢查",
+    "每輪結束都要提供清晰的進度報告"
+  ],
+  "notes": [
+    "此工作流程整合了 code-review-workflow.json 和 code-review-fix-workflow.json",
+    "適合用於大型重構或新功能開發後的完整品質檢查",
+    "循環過程中會持續追蹤問題，確保所有問題都被解決",
+    "如果發現循環無法解決的問題，會提示使用者進行人工檢查",
+    "建議在提交程式碼前執行此流程，確保程式碼品質"
+  ],
+  "usage_example": {
+    "scenario": "完成新功能開發後的品質檢查",
+    "steps": [
+      "1. 執行此 workflow",
+      "2. 指定要檢查的模組（例如：property）",
+      "3. 系統自動執行 Review → Fix → Review 循環",
+      "4. 查看最終報告，確認所有問題已解決",
+      "5. 執行測試並提交程式碼"
+    ]
+  }
+}

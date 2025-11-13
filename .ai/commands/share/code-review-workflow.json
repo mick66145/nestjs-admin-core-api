@@ -1,0 +1,141 @@
+{
+  "name": "Code Review 工作流程",
+  "description": "根據 docs 下的開發規範，對指定模組進行全面的 code review，檢查是否符合專案規範。",
+  "steps": [
+    {
+      "name": "讀取開發規範文件",
+      "description": "載入所有相關的開發規範文件",
+      "run": [
+        "cat ./docs/code-style-guide.md",
+        "cat ./docs/development-guidelines.md",
+        "cat ./docs/testing-guidelines.md"
+      ]
+    },
+    {
+      "name": "確認要 Review 的模組",
+      "description": "讓使用者指定要檢查的模組（例如：property, demand, dataset 等）",
+      "tasks": [
+        "詢問使用者要檢查哪個模組",
+        "列出 src/ 目錄下的所有模組供參考"
+      ]
+    },
+    {
+      "name": "讀取模組所有檔案",
+      "description": "讀取指定模組的所有 TypeScript 檔案",
+      "tasks": [
+        "使用 Glob 工具找出模組下的所有 .ts 檔案",
+        "依序讀取以下檔案：",
+        "  - DTO 檔案 (dto/*.dto.ts)",
+        "  - Entity 檔案 (entities/*.entity.ts)",
+        "  - Service 檔案 (*.service.ts)",
+        "  - Controller 檔案 (*.controller.ts)",
+        "  - Data Aggregator 檔案 (*.data-aggregator.ts)",
+        "  - Interface 檔案 (*.interface.ts)"
+      ]
+    },
+    {
+      "name": "進行 Code Review",
+      "description": "依照開發規範逐項檢查程式碼",
+      "checks": [
+        {
+          "category": "🚨 嚴重錯誤",
+          "items": [
+            "邏輯錯誤（如變數名稱錯誤、ID 互換等）",
+            "資料庫操作錯誤",
+            "關聯資源驗證錯誤"
+          ]
+        },
+        {
+          "category": "⚠️ 違反開發規範",
+          "items": [
+            "DTO 規範檢查：",
+            "  - 必填欄位：@ApiProperty + @IsNotEmpty + ! (type assertion)",
+            "  - 可選欄位：@ApiPropertyOptional + @IsOptional + ? (optional)",
+            "  - 日期欄位：@IsDate() + @Type(() => Date) + Date 型別",
+            "  - 關聯物件：使用嵌套物件 + @ValidateNested() + @Type()",
+            "  - Enum 欄位：example 應設為 null（除非有特定需求）",
+            "Query DTO 規範檢查：",
+            "  - 繼承 PaginationQueryDto（而非自行定義 page/limit）",
+            "  - 使用通用的 keyword 欄位（而非特定欄位名稱）",
+            "  - 支援動態排序：orderBy 參數",
+            "  - 支援 ID 陣列篩選：使用 @IntIdsQuery 裝飾器",
+            "Entity 規範檢查：",
+            "  - Nullable 欄位：@ApiPropertyOptional + type + nullable: true + 聯合型別",
+            "  - 關聯 Entity：@Type(() => EntityClass) + @Expose()",
+            "  - 所有公開屬性加上 @Expose()",
+            "Service 規範檢查：",
+            "  - 方法順序：Write（create/update/remove）→ Read（findAll/findOne）→ Support Methods",
+            "  - 關聯資源驗證：先驗證再關聯（使用 findOne 驗證）",
+            "  - 動態排序：使用 $PrismaOrderByInput.queryOrderBy",
+            "  - 關鍵字搜尋：使用 $PrismaWhereInput.whereKeywordInput",
+            "  - 日期範圍篩選：使用 $PrismaSingleDateTimeWhereInput.singleDateTimeInput",
+            "  - 事務管理：使用 $transaction 包裝寫入操作",
+            "  - 錯誤處理：使用 catchPrismaErrorOrThrow",
+            "Controller 規範檢查：",
+            "  - 方法順序：Write → Read",
+            "  - 參數管道：使用 ParseIntPipe",
+            "  - HTTP 狀態碼：刪除操作使用 @HttpCode(HttpStatus.NO_CONTENT)",
+            "  - Data Aggregator：統一處理 Service 回傳的資料",
+            "  - Swagger 裝飾器：@ApiOperation + @ApiOkResponse/@ApiDataListResponse"
+          ]
+        },
+        {
+          "category": "⚠️ 其他問題",
+          "items": [
+            "註釋風格：使用 JSDoc /** */ 而非 ///",
+            "API 文檔：@ApiProperty/@ApiPropertyOptional 應包含 description",
+            "命名規範：camelCase, PascalCase, kebab-case, SCREAMING_SNAKE_CASE",
+            "格式化：2 空格縮排、單引號、分號、trailing comma"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "產生 Review 報告",
+      "description": "整理檢查結果並產生結構化的報告",
+      "format": {
+        "sections": [
+          {
+            "title": "🚨 嚴重錯誤",
+            "description": "必須立即修復的阻塞性問題",
+            "content": "列出每個錯誤的檔案位置、行號、問題描述、正確做法"
+          },
+          {
+            "title": "⚠️ 違反開發規範",
+            "description": "不符合專案規範的問題",
+            "content": "列出違反的規範、檔案位置、行號、問題描述、正確做法"
+          },
+          {
+            "title": "⚠️ 其他問題",
+            "description": "建議改善的問題",
+            "content": "列出問題描述和建議"
+          },
+          {
+            "title": "✅ 符合規範的部分",
+            "description": "列出做得好的部分，給予正面回饋"
+          },
+          {
+            "title": "📋 總結",
+            "description": "分類總結所有問題，並詢問是否需要協助修復"
+          }
+        ]
+      }
+    },
+    {
+      "name": "修復問題（可選）",
+      "description": "根據使用者意願，協助修復發現的問題",
+      "tasks": [
+        "詢問使用者是否需要協助修復問題",
+        "如果需要，使用 Edit 工具逐一修復問題",
+        "修復後再次檢查，確保符合規範"
+      ]
+    }
+  ],
+  "notes": [
+    "此工作流程可用於任何模組的 code review",
+    "檢查項目基於 docs/code-style-guide.md 的規範",
+    "報告應該清晰、具體，並提供可行的修復建議",
+    "對於嚴重錯誤，應該標註為 🚨 以引起注意",
+    "對於符合規範的部分，也應該給予正面回饋"
+  ]
+}
