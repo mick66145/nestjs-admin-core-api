@@ -687,7 +687,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PrismaService } from 'src/_libs/prisma/prisma.service';
-import { catchPrismaErrorOrThrow } from 'src/libs/prisma/client-error';
+import { catchPrismaErrorOrThrow } from 'src/_libs/prisma/prisma-client-error';
 import { $PrismaOrderByInput } from 'src/libs/prisma/order-by-input';
 import { entityName } from './dataset-key.interface';
 import { CreateDatasetKeyDto } from './dto/create-dataset-key.dto';
@@ -854,6 +854,7 @@ async findAll(query: FindAllQueryDto) {
 ```
 
 **問題點：**
+
 - 每個 Service 都需要重複撰寫相同的日期處理邏輯
 - 時區轉換不統一，容易產生不一致的結果
 - 直接修改 `where` 的巢狀屬性，結構不清晰
@@ -882,6 +883,7 @@ async findAll(query: FindAllQueryDto) {
 ```
 
 **優點：**
+
 - 封裝重複邏輯，減少代碼重複
 - 工具函數內部使用 dayjs 統一處理時區轉換
 - 使用 `where.AND` 結構更清晰
