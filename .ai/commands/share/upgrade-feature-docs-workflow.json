@@ -1,12 +1,12 @@
 {
-  "name": "自動化更新功能文件協作流程",
+  "name": "更新功能文件協作流程",
   "description": "用於更新功能需求討論標準化流程。",
   "steps": [
     {
       "name": "讀取規範",
       "run": [
-        "cat ./docs/code-style-guide.md",
         "cat ./docs/development-guidelines.md",
+        "cat ./docs/code-style-guide.md",
         "cat ./docs/git.md",
         "cat ./docs/testing-guidelines.md",
         "cat ./docs/sa-documentation-style-guide.md",
@@ -14,22 +14,50 @@
       ]
     },
     {
-      "name": "需求分析與討論",
-      "description": "扮演PM/產品經理和工程師兩個角色，討論功能需求，釐清所有細節和限制。",
-      "tasks": [
-        "自己扮演資深PM/產品經理和資深工程師兩個角色，確認功能核心目標和業務價值，兩者自問自答後得出結論。",
-        "定義功能範圍和MVP (Minimum Viable Product)。",
-        "功能概述",
-        "核心目標與業務價值",
-        "功能需求",
-        "測試建議與驗收標準"
+      "name": "選擇功能模組",
+      "run": [
+        "echo '請問您要讀取哪個功能模組的 SA (系統分析) 和 SD (系統設計) 文件？'",
+        "echo '可用的功能模組：'",
+        "ls ./docs/features/"
       ]
     },
     {
-      "name": "更新文件",
-      "description": "更新功能說明文件。",
+      "name": "輸入更新需求",
+      "run": [
+        "echo '請大致描述您想要更新的需求：'",
+        "echo '例如：新增欄位、調整流程、修改API、資料庫調整等'",
+        "echo '或是提供整個功能的描述'"
+      ]
+    },
+    {
+      "name": "需求分析與討論",
+      "description": "扮演PM/產品經理、資深後端工程師、SA和SD等多個角色，討論功能需求，釐清所有細節和限制，並與用戶討論確認後再開始寫文件。",
       "tasks": [
-        "更新功能說明文件（通常在 `docs/features/` 下）。"
+        "自己扮演資深PM/產品經理、資深後端工程師、SA（系統分析師）和SD（系統設計師）等多個角色，確認功能核心目標和業務價值，各角色自問自答後得出結論。",
+        "定義功能範圍和MVP (Minimum Viable Product)。",
+        "功能概述",
+        "核心目標與業務價值",
+        "功能需求（包含後端API、資料庫設計等面向）",
+        "測試建議與驗收標準",
+        "與用戶討論以上分析結果，確認需求理解是否正確",
+        "等待用戶確認無誤後，才進入下一步文件撰寫階段"
+      ]
+    },
+    {
+      "name": "文件更新",
+      "description": "更新 SA (系統分析) 和 SD (系統設計) 文件。",
+      "tasks": [
+        "根據需求分析結果，更新 SA 系統分析文件",
+        "SA 文件應包含：使用情境範例、流程圖、時序圖、事件流程、連線生命週期",
+        "參考 ./docs/sa-documentation-style-guide.md 更新規範",
+        "更新 SD 系統設計文件",
+        "SD 文件應包含：文件結構、API 文件規範、資料結構定義、錯誤處理、範例代碼",
+        "參考 ./docs/sd-documentation-style-guide.md 更新規範",
+        "確認兩份文件都包含：文件頭部資訊（版本、日期、類型）、目錄、完整的欄位說明表格",
+        "所有代碼範例使用 TypeScript JSDoc 風格註釋 (/** */)",
+        "確保流程圖和時序圖格式正確，使用標準 ASCII 符號",
+        "將文件儲存在 `docs/features/模組名稱/` 目錄下",
+        "更新版本歷史表格"
       ]
     }
   ]

@@ -1,0 +1,69 @@
+{
+  "name": "自動化更新功能開發流程",
+  "description": "自動化更新現有功能的流程",
+  "steps": [
+    {
+      "name": "讀取規範",
+      "run": [
+        "cat ./docs/development-guidelines.md",
+        "cat ./docs/code-style-guide.md",
+        "cat ./docs/git.md",
+        "cat ./docs/testing-guidelines.md"
+      ]
+    },
+    {
+      "name": "選擇功能模組",
+      "run": [
+        "echo '請問您要讀取哪個功能模組的 SA (系統分析) 和 SD (系統設計) 文件？'",
+        "echo '可用的功能模組：'",
+        "ls ./docs/features/"
+      ]
+    },
+    {
+      "name": "理解更新需求",
+      "run": [
+        "echo '閱讀更新需求文件，明確需要修改或擴展的現有功能。'"
+      ]
+    },
+    {
+      "name": "切換/建立分支",
+      "run": [
+        "git checkout dev && git pull origin dev",
+        "echo '請輸入新功能分支名稱（如 fix/your-bug-fix）'",
+        "git checkout -b [update-type]/your-feature-name"
+      ]
+    },
+    {
+      "name": "依規範自動產生程式碼",
+      "run": [
+        "echo '=== 步驟 1: 讀取選定的功能模組 SA/SD 文件 ==='",
+        "FEATURE_FILE=$(ls ./docs/features/ | head -n 1)",
+        "cat ./docs/features/$FEATURE_FILE",
+        "echo ''",
+        "echo '=== 步驟 2: 分析需求並規劃程式碼結構 ==='",
+        "echo '根據 SA/SD 文件，將產生以下檔案：'",
+        "echo '- src/modules/*/controller/*.controller.ts'",
+        "echo '- src/modules/*/service/*.service.ts'",
+        "echo '- src/modules/*/dto/*.dto.ts'",
+        "echo '- src/modules/*/entities/*.entity.ts'",
+        "echo '- src/modules/*/interface/*.interface.ts'",
+        "echo ''",
+        "echo '=== 步驟 3: 自動產生程式碼檔案 ==='",
+        "echo '請 AI 根據以下規範產生程式碼：'",
+        "echo '1. development-guidelines.md - 開發規範'",
+        "echo '2. code-style-guide.md - 程式碼風格'",
+        "echo '3. 功能文件中的需求與設計'",
+        "echo ''",
+        "echo '=== 步驟 4: 如有資料庫變更，產生 Prisma Migration ==='",
+        "echo 'npx prisma migrate dev --name <feature_name>'",
+        "echo ''",
+        "echo '=== 步驟 5: 執行程式碼格式化 ==='",
+        "npx prettier --write \"src/**/*.ts\"",
+        "echo ''",
+        "echo '=== 步驟 6: 執行 TypeScript 編譯檢查 ==='",
+        "npx tsc --noEmit",
+        "echo ''"
+      ]
+    }
+  ]
+}
