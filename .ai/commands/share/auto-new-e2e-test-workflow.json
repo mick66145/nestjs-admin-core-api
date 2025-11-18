@@ -1,0 +1,43 @@
+{
+  "name": "自動化新增E2E Test",
+  "description": "E2E 測試流程：選擇功能模組、讀取 SA/SD 文件、編寫測試、執行驗證。",
+  "inputs": {
+    "featureModule": {
+      "description": "功能模組名稱（例如：monitoring-case, property, user 等）",
+      "required": true
+    },
+    "jestConfig": {
+      "description": "Jest E2E 測試設定檔路徑",
+      "default": "test/jest-e2e.json"
+    }
+  },
+  "steps": [
+    {
+      "name": "列出可用的功能模組",
+      "description": "顯示所有可用的功能模組供選擇。",
+      "prompt": "請列出 docs/features/ 目錄下所有可用的功能模組，並顯示它們的名稱。"
+    },
+    {
+      "name": "讀取功能模組文檔",
+      "description": "讀取選定模組的 SA（系統分析）和 SD（系統設計）文檔。",
+      "prompt": "請讀取 docs/features/${inputs.featureModule}/ 目錄下的 SA 和 SD 文檔：\n1. ${inputs.featureModule}-sa.md (系統分析文件)\n2. ${inputs.featureModule}-sd.md (系統設計文件)\n\n請分析以下內容：\n- 功能概述與使用情境\n- API 端點定義\n- 業務規則與資料驗證\n- 錯誤處理機制\n- 權限與安全性要求"
+    },
+    {
+      "name": "編寫 E2E 測試",
+      "description": "根據 SA/SD 文檔內容，編寫完整的 E2E 測試。",
+      "prompt": "根據剛才讀取的 SA 和 SD 文檔，為 ${inputs.featureModule} 模組編寫完整的 E2E 測試：\n\n測試檔案路徑：test/${inputs.featureModule}.e2e-spec.ts\n\n測試應包含：\n1. 【基礎 CRUD 測試】\n   - POST /api/${inputs.featureModule} - 建立資料（正常案例）\n   - POST /api/${inputs.featureModule} - 建立資料（驗證錯誤）\n   - GET /api/${inputs.featureModule} - 查詢列表（含分頁、篩選、排序）\n   - GET /api/${inputs.featureModule}/:id - 查詢單筆\n   - PATCH /api/${inputs.featureModule}/:id - 更新資料\n   - DELETE /api/${inputs.featureModule}/:id - 刪除資料\n\n2. 【業務邏輯測試】\n   - 根據 SA 文檔中的業務規則編寫測試\n   - 驗證資料完整性與一致性\n   - 測試關聯資料的處理\n\n3. 【權限與安全性測試】\n   - 未授權訪問測試\n   - 角色權限驗證\n\n4. 【錯誤處理測試】\n   - 根據 SD 文檔中的錯誤處理機制測試\n   - 驗證錯誤訊息格式\n\n5. 【測試資料準備與清理】\n   - beforeAll: 準備測試環境與資料\n   - afterAll: 清理測試資料\n\n請確保：\n- 使用 TypeScript 編寫\n- 遵循專案現有的測試風格\n- 包含清晰的測試描述\n- 適當的斷言（assertions）\n- 測試資料符合 SD 文檔中的資料結構定義"
+    },
+    {
+      "name": "執行 E2E 測試",
+      "description": "執行新建立的 E2E 測試並驗證結果。",
+      "run": [
+        "yarn test:e2e test/${inputs.featureModule}.e2e-spec.ts --config ${inputs.jestConfig}"
+      ]
+    },
+    {
+      "name": "分析測試結果",
+      "description": "分析測試結果，如有錯誤則修正。",
+      "prompt": "請分析剛才的測試執行結果：\n\n1. 如果測試全部通過，請總結測試覆蓋的功能點\n2. 如果有測試失敗：\n   - 分析失敗原因\n   - 對照 SA/SD 文檔檢查是否符合規格\n   - 修正測試代碼或指出 API 實作問題\n   - 重新執行測試\n\n3. 檢查測試覆蓋率：\n   - 是否涵蓋所有 API 端點\n   - 是否測試了所有業務規則\n   - 是否包含足夠的邊界案例"
+    }
+  ]
+}
