@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { OAuth2Client } from 'google-auth-library';
 import { abortIf } from 'src/_libs/api-response/abort.util';
 import { PrismaService } from 'src/_libs/prisma/prisma.service';
-import { dealWithPrismaClientError } from 'src/libs/prisma/client-error';
+import { dealWithPrismaClientError } from 'src/_libs/prisma/prisma-client-error';
 import { GoogleLoginConfigInterface } from 'src/config/third-party/third-party-config.interface';
 import { AccountType } from 'src/user-account/user-account.interface';
 import { UserAccountEntity } from 'src/user-account/entities/user-account.entity';

@@ -10,7 +10,7 @@ import { CreateUserDto, CreateRootUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRolePermissionEntity } from './entities/profile.entity';
 import { abort } from 'src/_libs/api-response/abort.util';
-import { dealWithPrismaClientError } from 'src/libs/prisma/client-error';
+import { dealWithPrismaClientError } from 'src/_libs/prisma/prisma-client-error';
 
 const entityName = '後台使用者';
 

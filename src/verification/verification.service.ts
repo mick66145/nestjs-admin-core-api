@@ -5,7 +5,7 @@ import isNil from 'lodash/isNil';
 import { generateRandomString } from 'src/_libs/utils/helper/string-helper';
 import { abortIf } from 'src/_libs/api-response/abort.util';
 import { PrismaService } from 'src/_libs/prisma/prisma.service';
-import { dealWithPrismaClientError } from 'src/libs/prisma/client-error';
+import { dealWithPrismaClientError } from 'src/_libs/prisma/prisma-client-error';
 import { CodeType, entityName } from './verification.interface';
 import { VerificationEntity } from './entities/verification.entity';
 import { CreateVerificationDto, VerifyCodeDto } from './dto/verification.dto';

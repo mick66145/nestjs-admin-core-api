@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/_libs/prisma/prisma.service';
 import { abortIf } from 'src/_libs/api-response/abort.util';
-import { dealWithPrismaClientError } from 'src/libs/prisma/client-error';
+import { dealWithPrismaClientError } from 'src/_libs/prisma/prisma-client-error';
 import { AccountType, entityName } from './user-account.interface';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { FindAllQueryDto } from './dto/find-all-query.dto';

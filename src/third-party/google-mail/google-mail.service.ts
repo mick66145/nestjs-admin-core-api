@@ -10,7 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import nodemailer, { SendMailOptions } from 'nodemailer';
 import { abortIf } from 'src/_libs/api-response/abort.util';
 import { PrismaService } from 'src/_libs/prisma/prisma.service';
-import { dealWithPrismaClientError } from 'src/libs/prisma/client-error';
+import { dealWithPrismaClientError } from 'src/_libs/prisma/prisma-client-error';
 import { GoogleMailConfigInterface } from 'src/config/third-party/third-party-config.interface';
 import { UserAccountService } from 'src/user-account/user-account.service';
 import { entityName } from './google-mail.interface';
