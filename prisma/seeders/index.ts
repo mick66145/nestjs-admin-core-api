@@ -4,3 +4,5 @@
  */
 
 export * from './base.seeder';
+export * from './role.seeder';
+export * from './user.seeder';
