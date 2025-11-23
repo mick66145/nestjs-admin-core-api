@@ -39,6 +39,14 @@ genPrisma:
 		$(DEV_IMAGE) \
 		sh -c 'npx prisma generate && cp -r node_modules/.prisma/* prisma_client/'
 
+genPrismaSeed:
+	docker run -it --rm --network=$(APP_NETWORK) \
+	  -v $$(pwd)/$(CONTEXT)/prisma:/app/prisma:ro \
+	  -v $$(pwd)/$(CONTEXT)/src:/app/src:ro \
+	  -v $(APP_PATH)/.env:/app/.env:ro \
+		$(DEV_IMAGE) \
+		sh -c 'npx prisma db seed'
+
 genDist:
 	docker run -it --rm -u root \
 		-v $$(pwd)/$(CONTEXT)/src:/app/src:ro \
