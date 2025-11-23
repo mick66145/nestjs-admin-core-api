@@ -11,10 +11,7 @@ async function main() {
     run: () => Promise<void>;
   }
   // 定義要執行的 seeders（順序很重要！）
-  const seeders: Seeder[] = [
-    new RoleSeeder(prisma),
-    new UserSeeder(prisma),
-  ];
+  const seeders: Seeder[] = [new RoleSeeder(prisma), new UserSeeder(prisma)];
 
   // 使用事務確保數據一致性
   if (seeders.length === 0) {
