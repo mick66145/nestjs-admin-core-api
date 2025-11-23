@@ -1,5 +1,6 @@
 import { BaseSeeder } from './base.seeder';
 import * as bcrypt from 'bcrypt';
+import { AccountType } from 'src/user-account/user-account.interface';
 
 /**
  * 使用者 Seeder
@@ -26,7 +27,7 @@ export class UserSeeder extends BaseSeeder {
       where: { id: 1 },
       update: {},
       create: {
-        type: 'local',
+        type: AccountType.Local,
         account: 'engineer',
         password: await bcrypt.hash('qweasdzxcC@', 10),
       },
@@ -70,7 +71,7 @@ export class UserSeeder extends BaseSeeder {
       where: { id: 2 },
       update: {},
       create: {
-        type: 'local',
+        type: AccountType.Local,
         account: 'admin',
         password: await bcrypt.hash('qazwsxedcC@', 10),
       },
