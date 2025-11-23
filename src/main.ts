@@ -51,8 +51,8 @@ function setupApp(app: INestApplication) {
     new ValidationPipe({
       transform: true,
       whitelist: true,
-      forbidNonWhitelisted: true,
-      transformOptions: { enableImplicitConversion: true },
+      // forbidNonWhitelisted: true,
+      // transformOptions: { enableImplicitConversion: true },
     }),
   );
 
