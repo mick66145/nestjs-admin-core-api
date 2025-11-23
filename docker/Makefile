@@ -43,6 +43,9 @@ genPrismaSeed:
 	docker run -it --rm --network=$(APP_NETWORK) \
 	  -v $$(pwd)/$(CONTEXT)/prisma:/app/prisma:ro \
 	  -v $$(pwd)/$(CONTEXT)/src:/app/src:ro \
+	  -v $$(pwd)/$(CONTEXT)/package.json:/app/package.json:ro \
+	  -v $$(pwd)/$(CONTEXT)/tsconfig.json:/app/tsconfig.json:ro \
+	  -v $$(pwd)/app/prisma_client:/app/node_modules/.prisma:ro \
 	  -v $(APP_PATH)/.env:/app/.env:ro \
 		$(DEV_IMAGE) \
 		sh -c 'npx prisma db seed'

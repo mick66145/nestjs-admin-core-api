@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { RoleSeeder, UserSeeder } from './seeders';
 
 const prisma = new PrismaClient();
@@ -19,7 +19,7 @@ async function main() {
     return;
   }
   // 使用事務確保數據一致性
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     for (const seeder of seeders) {
       // 將 tx 傳遞給 seeder，讓它使用事務中的 prisma client
       (seeder as any).prisma = tx as any;
