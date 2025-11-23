@@ -8,7 +8,6 @@ async function main() {
   // 定義 Seeder 型別並要執行的 seeders（順序很重要！）
   interface Seeder {
     run: () => Promise<void>;
-    prisma?: any;
   }
   const seeders: Seeder[] = [];
 
@@ -17,10 +16,11 @@ async function main() {
     console.log('⚠️ 沒有可執行的 seeders。');
     return;
   }
+  // 使用事務確保數據一致性
   await prisma.$transaction(async (tx) => {
     for (const seeder of seeders) {
       // 將 tx 傳遞給 seeder，讓它使用事務中的 prisma client
-      seeder['prisma'] = tx as any;
+      (seeder as any).prisma = tx as any;
       await seeder.run();
     }
   });
