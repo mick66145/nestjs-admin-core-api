@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { RoleSeeder, UserSeeder } from './seeders';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,11 @@ async function main() {
   interface Seeder {
     run: () => Promise<void>;
   }
-  const seeders: Seeder[] = [];
+  // 定義要執行的 seeders（順序很重要！）
+  const seeders: Seeder[] = [
+    new RoleSeeder(prisma),
+    new UserSeeder(prisma),
+  ];
 
   // 使用事務確保數據一致性
   if (seeders.length === 0) {
