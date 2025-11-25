@@ -234,14 +234,14 @@
 
 **標準格式：**
 
-````markdown
+```markdown
 ​`typescript
 interface User {
   id: string;
   name: string;
 }
 ​`
-````
+```
 
 **語言標示規範：**
 
@@ -323,7 +323,7 @@ interface CreateUserDto {
 
 每個 API 端點必須包含：
 
-````markdown
+```markdown
 ### [HTTP Method] /api/endpoint - 端點名稱
 
 **說明：** [端點功能的簡短描述]
@@ -370,7 +370,7 @@ interface RequestInterface {
   "message": ["錯誤訊息"]
 }
 ​`
-````
+```
 
 ### 7.2 WebSocket 事件描述
 
@@ -410,7 +410,7 @@ interface RequestInterface {
 
 **標準格式：**
 
-````markdown
+```markdown
 #### [結構名稱] 結構
 
 ​`typescript
@@ -428,7 +428,7 @@ interface StructureName {
 | `field1` | string  | ✅   | 欄位1說明       |
 | `field2` | number  | ✅   | 欄位2說明       |
 | `field3` | boolean | ❌   | 欄位3說明(可選) |
-````
+```
 
 ---
 
@@ -479,7 +479,7 @@ console.log('成功');
 - 觸發原因
 - 處理建議
 
-````markdown
+```markdown
 **1. 參數驗證錯誤 (400 Bad Request)：**
 
 **觸發原因：** 請求參數格式不正確或缺少必填欄位
@@ -496,7 +496,7 @@ console.log('成功');
 ​`
 
 **處理建議：** 檢查請求參數，確保所有必填欄位都已提供且格式正確
-````
+```
 
 ---
 
@@ -506,7 +506,7 @@ console.log('成功');
 
 使用 ASCII 字元繪製流程圖：
 
-````markdown
+```markdown
 ​`
 使用者操作
   │
@@ -523,7 +523,7 @@ console.log('成功');
       ├─> 成功：顯示結果
       └─> 失敗：顯示錯誤
 ​`
-````
+```
 
 **流程圖規範：**
 
@@ -534,7 +534,7 @@ console.log('成功');
 
 ### 9.2 時序圖
 
-````markdown
+```markdown
 ​`
 [客戶端]                    [伺服器]
    │                           │
@@ -543,7 +543,7 @@ console.log('成功');
    │<──── 回應 ─────────────────┤
    │                           │
 ​`
-````
+```
 
 ### 9.3 Emoji 使用指南
 
@@ -753,9 +753,9 @@ console.log('成功');
 
 ### 2.2 API 端點
 
-- DEV環境：`https://api-ai-dataset.dev.mouth.team`
-- BETA環境：`https://api-ai-dataset.demo.mouth.team`
-- PROD環境：[待定]
+- DEV環境：
+- BETA環境：
+- PROD環境：
 
 ---
 
