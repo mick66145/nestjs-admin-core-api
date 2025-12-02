@@ -27,6 +27,19 @@ services:
   #   networks:
   #     - app_network
 
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   expose:
+  #     - 6379
+  #   ports:
+  #     - ${HOST_REDIS_PORT:-6379}:6379
+  #   volumes:
+  #     - ../redis/data:/data
+  #   networks:
+  #     - app_network
+  #   command: redis-server --appendonly yes
+
   # mongodb:
   #   image: mongo:7.0
   #   restart: unless-stopped

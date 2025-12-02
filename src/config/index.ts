@@ -4,6 +4,7 @@ import loggerConfig from 'src/_libs/logger/logger.config';
 import swaggerConfig from 'src/_libs/app/swagger.config';
 import appProjectConfig from './app-project/app-project.config';
 import jwtConfig from 'src/_libs/auth/jwt.config';
+import redisConfig from './redis/redis.config';
 import verificationConfig from './verification/verification.config';
 import thirdPartyConfig from './third-party/third-party.config';
 
@@ -14,6 +15,7 @@ export const configLoads = [
   swaggerConfig,
   appProjectConfig,
   jwtConfig,
+  redisConfig,
   verificationConfig,
   thirdPartyConfig,
 ];
