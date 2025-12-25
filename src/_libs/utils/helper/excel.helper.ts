@@ -1,7 +1,7 @@
 import range from 'lodash/range';
 import * as XLSX from 'xlsx';
 import { BorderStyle, Worksheet, Workbook, Style, Cell, Row } from 'exceljs';
-import * as iconv from 'iconv-lite';
+import iconv from 'iconv-lite';
 import { Duplex } from 'stream';
 import { toArrayBuffer } from './parse-value';
 
