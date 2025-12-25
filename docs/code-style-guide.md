@@ -528,6 +528,8 @@ export class CreateDemandDto {
   - 型別標註使用聯合型別（如 `desiredFloors!: string | null`）
 - 屬性使用 `!` 強制斷言，表示該屬性在實例化後一定會有值，符合資料庫模型
 - `createdAt` 和 `updatedAt` 使用 `Date` 類型，並應配合資料庫的時區設定
+- **`deletedAt` 不應回傳給前端**：軟刪除時間欄位不應加上 `@Expose()` 或 `@ApiPropertyOptional` 裝飾器，避免將內部實作細節暴露給 API 使用者
+- **關聯 ID 欄位不應回傳給前端**：當 Entity 已包含完整的關聯 Entity（如 `property`、`monitoringCase`）時，對應的外鍵 ID 欄位（如 `propertyId`、`monitoringCaseId`）不應加上 `@Expose()` 或 `@ApiProperty` 裝飾器。這避免了資料重複（ID 已包含在關聯 Entity 中），並保持 API 響應的簡潔性
 - **API 響應實體**：所有 API 響應應統一返回 Entity 實例（或 `ResourceListEntity` 包含 Entity 陣列）。Entity 應利用 `class-transformer` 的 `@Expose()` 和 `@Exclude()` 裝飾器精確控制哪些屬性會被序列化並呈現在 API 響應中，包括嵌套的關聯 Entity
 - **關聯 Entity 嵌套**：當 Entity 包含關聯 Entity 時（例如 `DatasetKeyEntity` 中的 `dataset`），應使用 `@Type(() => RelatedEntity)` 和 `@Expose()` 裝飾器確保正確的類型轉換和序列化
 
@@ -552,10 +554,6 @@ export class DatasetKeyEntity implements DatasetKey {
   @ApiProperty({ description: '更新時間', example: '2024-01-01T00:00:00.000Z' })
   @Expose()
   updatedAt!: Date;
-
-  @ApiProperty({ description: '所屬資料集 ID', example: 1 })
-  @Expose()
-  datasetId!: number | null;
 
   @ApiProperty({ description: '密鑰名稱', example: '颱風' })
   @Expose()
@@ -611,7 +609,9 @@ export class DatasetKeyEntity implements DatasetKey {
   @Expose()
   status!: DatasetKeyStatus;
 
-  deletedAt!: Date | null;
+  // ❌ 以下欄位不加 @Expose() 和 @ApiProperty，不回傳給前端
+  deletedAt!: Date | null; // 軟刪除欄位不暴露
+  datasetId!: number | null; // 已有關聯 Entity (dataset)，不需重複回傳 ID
 }
 ```
 
@@ -725,6 +725,7 @@ export class DatasetKeyService {
   }
 
   async update(id: number, dto: UpdateDatasetKeyDto) {
+    await this.findOrThrow(id);
     const { ...datasetKeyData } = dto;
     const data: Prisma.DatasetKeyUpdateInput = {
       ...datasetKeyData,

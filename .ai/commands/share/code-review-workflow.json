@@ -1,141 +1,691 @@
 {
   "name": "Code Review 工作流程",
-  "description": "根據 docs 下的開發規範，對指定模組進行全面的 code review，檢查是否符合專案規範。",
+  "description": "根據 docs 下的開發規範，對指定模組進行全面且系統化的 code review。確保一次檢查就能發現所有問題。",
+  "mindset": {
+    "role": "🎯 你是一位資深工程師和架構師",
+    "description": "執行 Code Review 時，必須以資深工程師和架構師的角度來審視程式碼。不是只檢查表面問題，而是要深入理解程式碼的設計意圖、追蹤依賴關係、驗證跨檔案一致性。",
+    "principles": [
+      "🔴 謹慎細心：每一行程式碼都可能隱藏問題，不要跳過任何細節",
+      "🔴 追根究底：看到任何程式碼都要問「這個有被使用嗎？」「為什麼要這樣寫？」",
+      "🔴 全局視野：不只看單一檔案，要理解整個模組的依賴關係和資料流",
+      "🔴 一次到位：以「這是唯一一次 Code Review 機會」的心態來執行，不允許遺漏",
+      "🔴 預見問題：思考程式碼在各種情況下的行為，包括邊界條件和錯誤情況"
+    ],
+    "key_questions": [
+      "這個 import 有被使用嗎？",
+      "這個注入的 service 有被使用嗎？",
+      "這個方法有被呼叫嗎？",
+      "Module 的 imports 和 Service 的依賴是否一致？",
+      "這個變數名稱是否正確？有沒有可能搞混？",
+      "這個邏輯在邊界條件下會怎樣？",
+      "這個錯誤處理是否完整？"
+    ]
+  },
+  "review_authority": {
+    "description": "🚨 檢查的權威來源與優先級",
+    "priority_order": [
+      "1️⃣ 規範文件（docs/code-style-guide.md 等）- 最高權威，必須完整理解並據此檢查",
+      "2️⃣ 本工作流程的 reference_checks - 僅供參考的最低要求，不代表完整檢查項目"
+    ],
+    "key_principle": "必須根據規範文件的完整內容進行檢查，而非僅依賴本工作流程的清單。規範文件有更新時，檢查內容應自動涵蓋新規則，無需等待本工作流程更新。",
+    "intelligence_requirement": "執行 Code Review 時，必須理解規範文件的精神和細節，聰明地判斷程式碼是否符合規範，而非機械式地只檢查清單項目。"
+  },
+  "critical_rules": [
+    "🚨 規範文件是權威來源：必須完整閱讀並理解 docs/ 下的規範文件，據此進行全面檢查",
+    "🚨 本工作流程的 reference_checks 只是參考：即使清單沒列出，只要違反規範文件就必須指出",
+    "🚨 範例程式碼是法律：規範文件中的範例是唯一正確寫法，任何不同寫法都是違規",
+    "🚨 必須深入理解範例：不能只機械式比對，必須理解範例的【目的和原因】才能發現衍生問題",
+    "🚨 發現問題先問 Why：看到問題時先問「為什麼會這樣」，才能正確判斷問題本質和嚴重度",
+    "🚨 分析衍生問題：每個違規都要分析可能造成的後果，據此調整嚴重度",
+    "🚨 必須先讀取所有檔案，建立完整檔案清單後，才能開始 review",
+    "🚨 每個檔案必須逐一完整檢查，不可跳過任何檔案",
+    "🚨 使用 TodoWrite 工具追蹤每個檔案的檢查進度",
+    "🚨 最終必須驗證所有檔案都已完成檢查",
+    "🚨 每個問題的修復建議必須完整，包含所有連鎖修改（如移除程式碼後產生的 unused imports）",
+    "🚨 一次 Code Review 必須找出所有問題，不允許需要多次執行才能發現全部問題",
+    "🚨 必須追蹤依賴使用：每個 import、每個注入的 service 都必須確認有被使用，否則是 dead code",
+    "🚨 必須追蹤方法呼叫：每個 protected/private 方法都必須確認有被呼叫，否則是 dead code",
+    "🚨 必須交叉驗證 Module 和 Service：Module 的 imports 必須與 Service 的依賴注入一致",
+    "🚨 必須檢查變數命名正確性：特別是多個相似變數時（如 propertyDto vs monitoringCaseDto），確認沒有搞混"
+  ],
+  "severity_levels": {
+    "high": {
+      "label": "🚨 高 (嚴重錯誤)",
+      "description": "會導致系統錯誤、資料不一致、安全漏洞的問題，必須立即修復",
+      "examples": [
+        "邏輯錯誤（變數名稱錯誤、ID 互換等）",
+        "資料庫操作錯誤",
+        "關聯資源未驗證就使用",
+        "安全性問題",
+        "事務管理缺失導致資料不一致"
+      ]
+    },
+    "medium": {
+      "label": "⚠️ 中 (違反規範)",
+      "description": "違反專案開發規範，影響程式碼品質和一致性，應盡快修復",
+      "examples": [
+        "DTO 裝飾器使用不正確",
+        "Entity 欄位定義不符合規範",
+        "Service 方法順序錯誤",
+        "Controller 缺少必要的裝飾器",
+        "未使用專案工具函數"
+      ]
+    },
+    "low": {
+      "label": "💡 低 (建議改善)",
+      "description": "不影響功能但可以改善的部分，有時間時處理",
+      "examples": [
+        "註釋風格不一致",
+        "命名可以更清晰",
+        "未使用的 import",
+        "格式化問題",
+        "缺少描述性文字"
+      ]
+    }
+  },
+  "fix_suggestion_requirements": {
+    "description": "每個問題的修復建議必須完整，需分析修復後的連鎖效應",
+    "mandatory_checks": [
+      "移除程式碼前，檢查相關 import 是否會變成未使用",
+      "移除程式碼前，檢查相關變數是否會變成未使用",
+      "移除程式碼前，檢查相關型別定義是否會變成未使用",
+      "修改函數簽名時，檢查所有呼叫處是否需要同步修改",
+      "重命名時，檢查所有引用處是否需要同步修改"
+    ],
+    "fix_format": {
+      "description": "修復建議必須包含以下結構",
+      "template": {
+        "主要修改": "描述需要修改的主要程式碼",
+        "連鎖修改": "列出因主要修改而需要同步處理的其他修改",
+        "完整步驟": "按順序列出所有修改步驟"
+      },
+      "example": {
+        "問題": "使用 @Transform 將 null 轉為 undefined，與其他欄位不一致",
+        "主要修改": "移除第 94-97 行的 @Transform 裝飾器",
+        "連鎖修改": "移除第 2 行 import 中的 Transform（移除裝飾器後會變成未使用）",
+        "完整步驟": [
+          "1. 刪除第 94-97 行的 @Transform(...) 裝飾器",
+          "2. 修改第 2 行：將 { Exclude, Expose, Type, Transform } 改為 { Exclude, Expose, Type }"
+        ]
+      }
+    }
+  },
   "steps": [
     {
-      "name": "讀取開發規範文件",
-      "description": "載入所有相關的開發規範文件",
-      "run": [
-        "cat ./docs/code-style-guide.md",
-        "cat ./docs/development-guidelines.md",
-        "cat ./docs/testing-guidelines.md"
-      ]
-    },
-    {
-      "name": "確認要 Review 的模組",
-      "description": "讓使用者指定要檢查的模組（例如：property, demand, dataset 等）",
-      "tasks": [
-        "詢問使用者要檢查哪個模組",
-        "列出 src/ 目錄下的所有模組供參考"
-      ]
-    },
-    {
-      "name": "讀取模組所有檔案",
-      "description": "讀取指定模組的所有 TypeScript 檔案",
-      "tasks": [
-        "使用 Glob 工具找出模組下的所有 .ts 檔案",
-        "依序讀取以下檔案：",
-        "  - DTO 檔案 (dto/*.dto.ts)",
-        "  - Entity 檔案 (entities/*.entity.ts)",
-        "  - Service 檔案 (*.service.ts)",
-        "  - Controller 檔案 (*.controller.ts)",
-        "  - Data Aggregator 檔案 (*.data-aggregator.ts)",
-        "  - Interface 檔案 (*.interface.ts)"
-      ]
-    },
-    {
-      "name": "進行 Code Review",
-      "description": "依照開發規範逐項檢查程式碼",
-      "checks": [
-        {
-          "category": "🚨 嚴重錯誤",
-          "items": [
-            "邏輯錯誤（如變數名稱錯誤、ID 互換等）",
-            "資料庫操作錯誤",
-            "關聯資源驗證錯誤"
-          ]
-        },
-        {
-          "category": "⚠️ 違反開發規範",
-          "items": [
-            "DTO 規範檢查：",
-            "  - 必填欄位：@ApiProperty + @IsNotEmpty + ! (type assertion)",
-            "  - 可選欄位：@ApiPropertyOptional + @IsOptional + ? (optional)",
-            "  - 日期欄位：@IsDate() + @Type(() => Date) + Date 型別",
-            "  - 關聯物件：使用嵌套物件 + @ValidateNested() + @Type()",
-            "  - Enum 欄位：example 應設為 null（除非有特定需求）",
-            "Query DTO 規範檢查：",
-            "  - 繼承 PaginationQueryDto（而非自行定義 page/limit）",
-            "  - 使用通用的 keyword 欄位（而非特定欄位名稱）",
-            "  - 支援動態排序：orderBy 參數",
-            "  - 支援 ID 陣列篩選：使用 @IntIdsQuery 裝飾器",
-            "Entity 規範檢查：",
-            "  - Nullable 欄位：@ApiPropertyOptional + type + nullable: true + 聯合型別",
-            "  - 關聯 Entity：@Type(() => EntityClass) + @Expose()",
-            "  - 所有公開屬性加上 @Expose()",
-            "Service 規範檢查：",
-            "  - 方法順序：Write（create/update/remove）→ Read（findAll/findOne）→ Support Methods",
-            "  - 關聯資源驗證：先驗證再關聯（使用 findOne 驗證）",
-            "  - 動態排序：使用 $PrismaOrderByInput.queryOrderBy",
-            "  - 關鍵字搜尋：使用 $PrismaWhereInput.whereKeywordInput",
-            "  - 日期範圍篩選：使用 $PrismaSingleDateTimeWhereInput.singleDateTimeInput",
-            "  - 事務管理：使用 $transaction 包裝寫入操作",
-            "  - 錯誤處理：使用 catchPrismaErrorOrThrow",
-            "Controller 規範檢查：",
-            "  - 方法順序：Write → Read",
-            "  - 參數管道：使用 ParseIntPipe",
-            "  - HTTP 狀態碼：刪除操作使用 @HttpCode(HttpStatus.NO_CONTENT)",
-            "  - Data Aggregator：統一處理 Service 回傳的資料",
-            "  - Swagger 裝飾器：@ApiOperation + @ApiOkResponse/@ApiDataListResponse"
-          ]
-        },
-        {
-          "category": "⚠️ 其他問題",
-          "items": [
-            "註釋風格：使用 JSDoc /** */ 而非 ///",
-            "API 文檔：@ApiProperty/@ApiPropertyOptional 應包含 description",
-            "命名規範：camelCase, PascalCase, kebab-case, SCREAMING_SNAKE_CASE",
-            "格式化：2 空格縮排、單引號、分號、trailing comma"
+      "name": "Step 1: 載入開發規範並提取範例模式",
+      "description": "🚨 最關鍵步驟：完整閱讀規範文件，並提取每個檔案類型的【標準範例模式】。範例程式碼就是法律。",
+      "actions": [
+        "讀取 docs/code-style-guide.md",
+        "讀取 docs/development-guidelines.md",
+        "讀取 docs/testing-guidelines.md"
+      ],
+      "example_extraction": {
+        "instruction": "🚨🚨🚨 必須從規範文件中提取每個檔案類型的【範例程式碼模式】，這是檢查的唯一標準",
+        "mandatory_extractions": [
+          {
+            "file_type": "Service (7.4 節)",
+            "extract_patterns": [
+              "create 方法的解構展開模式：const { ...data } = dto",
+              "Prisma input 的展開方式：{ ...data, relation: { connect: {} } }",
+              "方法順序：Write → Read → Support Methods",
+              "private readonly where / include 的寫法",
+              "錯誤處理：catchPrismaErrorOrThrow",
+              "資料轉換：plainToInstance"
+            ]
+          },
+          {
+            "file_type": "Entity (7.2 節)",
+            "extract_patterns": [
+              "implements Prisma Interface",
+              "@Exclude() 類別裝飾器",
+              "@Expose() + @ApiProperty 組合",
+              "Nullable 欄位：@ApiPropertyOptional + type + nullable: true",
+              "deletedAt 不加任何裝飾器"
+            ]
+          },
+          {
+            "file_type": "DTO (7.1 節)",
+            "extract_patterns": [
+              "必填：@ApiProperty + @IsNotEmpty + !",
+              "可選：@ApiPropertyOptional + @IsOptional + ?",
+              "嵌套物件：@ValidateNested + @Type + @IsObject + @IsNotEmptyObject"
+            ]
+          },
+          {
+            "file_type": "Controller (7.6 節)",
+            "extract_patterns": [
+              "方法順序：Write → Read",
+              "裝飾器組合：@ApiOperation + @ApiOkResponse",
+              "DataAggregator 的使用方式"
+            ]
+          }
+        ],
+        "critical_rule": "🚨 範例程式碼就是唯一正確的寫法。任何與範例不同的寫法都是【違反規範】，不是【建議改善】。"
+      },
+      "understanding_requirement": {
+        "instruction": "🚨 必須像背法條一樣熟記範例程式碼的每個細節，並【深入理解其目的】",
+        "process": [
+          "1. 逐行閱讀規範文件中的每個範例程式碼",
+          "2. 提取範例中使用的【具體模式】（不是描述，是實際程式碼寫法）",
+          "3. 🚨 理解每個模式的【目的和原因】（為什麼要這樣寫？解決什麼問題？）",
+          "4. 將這些模式作為 Code Review 的【唯一標準答案】",
+          "5. 任何與範例不同的寫法 = 中嚴重度違規",
+          "6. 🚨 分析違規寫法可能造成的【衍生問題】"
+        ],
+        "key_point": "reference_checks 只是提醒，【範例程式碼】才是法律",
+        "deep_understanding": {
+          "instruction": "🚨🚨🚨 不能只是機械式比對！必須理解範例背後的設計意圖，才能發現衍生問題",
+          "examples": [
+            {
+              "pattern": "const { ...data } = dto → { ...data }",
+              "purpose": "讓 DTO 中的 undefined 值直接傳給 Prisma（不更新該欄位），而非被轉換為 null",
+              "if_violated": "如果手動寫 dto.field ?? null，會導致：1) 資料被意外覆蓋為 null 2) 部分更新（PATCH）無法正常運作",
+              "derivative_issue": "這不只是「違反規範」，還會造成【高嚴重度的資料錯誤】"
+            },
+            {
+              "pattern": "Entity implements Prisma Interface",
+              "purpose": "確保 Entity 的屬性與資料庫 schema 同步，TypeScript 編譯時會自動檢查",
+              "if_violated": "Entity 欄位可能與資料庫不同步，導致執行時錯誤或資料遺失",
+              "derivative_issue": "缺少 implements 會讓 schema 變更時沒有編譯錯誤提醒"
+            },
+            {
+              "pattern": "deletedAt 不加 @Expose()",
+              "purpose": "軟刪除是內部實作細節，不應暴露給 API 使用者",
+              "if_violated": "前端可能誤用 deletedAt 欄位，或造成安全疑慮（洩漏刪除資訊）",
+              "derivative_issue": "可能違反資料隱私或 API 設計原則"
+            }
           ]
         }
-      ]
-    },
-    {
-      "name": "產生 Review 報告",
-      "description": "整理檢查結果並產生結構化的報告",
-      "format": {
-        "sections": [
-          {
-            "title": "🚨 嚴重錯誤",
-            "description": "必須立即修復的阻塞性問題",
-            "content": "列出每個錯誤的檔案位置、行號、問題描述、正確做法"
-          },
-          {
-            "title": "⚠️ 違反開發規範",
-            "description": "不符合專案規範的問題",
-            "content": "列出違反的規範、檔案位置、行號、問題描述、正確做法"
-          },
-          {
-            "title": "⚠️ 其他問題",
-            "description": "建議改善的問題",
-            "content": "列出問題描述和建議"
-          },
-          {
-            "title": "✅ 符合規範的部分",
-            "description": "列出做得好的部分，給予正面回饋"
-          },
-          {
-            "title": "📋 總結",
-            "description": "分類總結所有問題，並詢問是否需要協助修復"
-          }
-        ]
       }
     },
     {
-      "name": "修復問題（可選）",
-      "description": "根據使用者意願，協助修復發現的問題",
-      "tasks": [
-        "詢問使用者是否需要協助修復問題",
-        "如果需要，使用 Edit 工具逐一修復問題",
-        "修復後再次檢查，確保符合規範"
+      "name": "Step 2: 確認要 Review 的模組",
+      "description": "確定檢查範圍",
+      "actions": [
+        "詢問使用者要檢查哪個模組",
+        "使用 Glob 列出 src/ 目錄下的所有模組供參考"
       ]
+    },
+    {
+      "name": "Step 3: 建立完整檔案清單",
+      "description": "🚨 關鍵步驟：必須找出模組下的所有檔案，不可遺漏",
+      "actions": [
+        "使用 Glob 找出模組下所有 .ts 檔案",
+        "分類整理所有檔案：",
+        "  - dto/*.dto.ts",
+        "  - entities/*.entity.ts",
+        "  - *.service.ts",
+        "  - *.controller.ts",
+        "  - *.data-aggregator.ts",
+        "  - *.interface.ts",
+        "  - *.module.ts",
+        "  - 其他 .ts 檔案",
+        "使用 TodoWrite 建立所有檔案的待檢查清單"
+      ],
+      "important": "必須確保每個檔案都在清單中，遺漏任何檔案都是不允許的"
+    },
+    {
+      "name": "Step 4: 逐一讀取所有檔案",
+      "description": "🚨 關鍵步驟：必須先讀取所有檔案內容，不可邊讀邊審",
+      "actions": [
+        "按照檔案清單，依序讀取每個檔案的完整內容",
+        "確保每個檔案都被完整讀取",
+        "記錄每個檔案的行數作為參考"
+      ],
+      "important": "不要在這個步驟進行 review，只專注於讀取"
+    },
+    {
+      "name": "Step 4.5: 建立依賴關係圖並追蹤使用情況",
+      "description": "🚨🚨🚨 最容易遺漏的步驟：在開始 review 前，先建立模組內的依賴關係圖，追蹤每個依賴是否被使用",
+      "why_critical": "這是最常被遺漏的檢查。如果跳過這步，會漏掉 dead code、未使用的 import、未使用的依賴注入等問題。",
+      "actions": [
+        "1. 從 Module 檔案提取 imports 的所有模組",
+        "2. 從 Service 檔案提取 constructor 注入的所有依賴",
+        "3. 從 Service 檔案提取所有 import 語句",
+        "4. 從 Service 檔案列出所有 protected/private 方法",
+        "5. 逐一追蹤每個依賴/import/方法是否有被使用"
+      ],
+      "dependency_tracking_checklist": {
+        "module_to_service": {
+          "check": "Module imports 的模組 → Service 是否有注入對應的依賴？",
+          "example": {
+            "module": "imports: [SerialNumberModule]",
+            "service_should_have": "constructor(private readonly serialNumberService: SerialNumberService)",
+            "if_missing": "Module import 了模組但 Service 沒用 = 移除 Module 的 import"
+          }
+        },
+        "service_injection_usage": {
+          "check": "Service 注入的依賴 → 是否有在任何方法中被使用？",
+          "example": {
+            "injection": "private readonly serialNumberService: SerialNumberService",
+            "must_verify": "搜尋 this.serialNumberService 是否出現在任何方法中",
+            "if_not_used": "依賴注入了但沒使用 = dead code，需移除"
+          }
+        },
+        "method_call_tracking": {
+          "check": "每個 protected/private 方法 → 是否有被其他方法呼叫？",
+          "example": {
+            "method": "protected async generateSerialNumber()",
+            "must_verify": "搜尋 this.generateSerialNumber 是否出現在任何地方",
+            "if_not_called": "方法存在但沒被呼叫 = dead code，需移除"
+          }
+        },
+        "import_usage": {
+          "check": "每個 import → 是否有在檔案中被使用？",
+          "example": {
+            "import": "import { IsArray } from 'class-validator'",
+            "must_verify": "搜尋 IsArray 是否出現在檔案的其他地方",
+            "if_not_used": "import 了但沒使用 = 移除該 import"
+          }
+        }
+      },
+      "output": "產出一份依賴關係清單，標記每個項目的使用狀態（✅ 有使用 / ❌ 未使用）"
+    },
+    {
+      "name": "Step 5: 逐檔案進行 Code Review（與範例逐行比對）",
+      "description": "🚨🚨🚨 將每個檔案與規範文件中的【範例程式碼】逐行比對。任何與範例不同的寫法都是違規。",
+      "review_approach": {
+        "primary": "🚨 將實際程式碼與規範範例【逐行比對】",
+        "secondary": "reference_checks 只是輔助提醒，不是檢查標準",
+        "critical": "🚨🚨🚨 範例怎麼寫，程式碼就必須怎麼寫。不同 = 違規。"
+      },
+      "comparison_methodology": {
+        "instruction": "對每個檔案，執行以下比對流程",
+        "steps": [
+          "1. 找到規範文件中對應的範例（如 Service → 7.4 節範例）",
+          "2. 列出範例中使用的【具體模式】",
+          "3. 逐一檢查實際程式碼是否符合每個模式",
+          "4. 任何不符合的地方 = 中嚴重度違規",
+          "5. 修復建議必須【參照範例】，不可自創寫法"
+        ],
+        "example": {
+          "scenario": "檢查 plan.service.ts 的 create 方法",
+          "correct_process": [
+            "1. 找到規範 7.4 節的 create 範例：const { ...data } = dto; → { ...data }",
+            "2. 檢查 plan.service.ts 的 create 是否使用相同模式",
+            "3. 發現 plan.service.ts 使用 dto.title, dto.schedule... 逐一指定",
+            "4. 判定：與範例不同 = 中嚴重度違規",
+            "5. 修復建議：改成範例的寫法 const { ...planData } = dto; → { ...planData }"
+          ],
+          "wrong_process": [
+            "❌ 只檢查 reference_checks 清單",
+            "❌ 看到 planData 沒使用就建議刪除",
+            "❌ 把違規歸類為「建議改善」"
+          ]
+        }
+      },
+      "derivative_issue_analysis": {
+        "instruction": "🚨🚨🚨 發現違規後，必須分析可能造成的【衍生問題】並適當調整嚴重度",
+        "process": [
+          "1. 發現違規寫法",
+          "2. 問自己：這個違規會造成什麼後果？",
+          "3. 如果後果是【資料錯誤/系統錯誤】→ 提升為高嚴重度",
+          "4. 如果後果是【功能不正常】→ 視情況可能為高或中嚴重度",
+          "5. 將衍生問題一併記錄在報告中"
+        ],
+        "examples": [
+          {
+            "violation": "使用 dto.field ?? null 而非展開模式",
+            "direct_issue": "違反規範 7.4 的寫法（中嚴重度）",
+            "derivative_issue": "會導致 PATCH 更新時資料被意外覆蓋為 null（高嚴重度）",
+            "final_severity": "🚨 高嚴重度（因為衍生問題影響資料正確性）"
+          },
+          {
+            "violation": "解構變數 planData 但沒使用",
+            "wrong_analysis": "❌ 認為這是未使用變數 → 建議刪除 → 低嚴重度",
+            "correct_analysis": "✅ 這表示開發者本應使用展開模式但沒用 → 應該建議使用 ...planData → 中嚴重度",
+            "reasoning": "必須理解【為什麼】要有這個解構，而非只看到「沒使用」"
+          }
+        ],
+        "key_principle": "🚨 看到問題時，先問「為什麼會這樣」而非「這個怎麼改」"
+      },
+      "file_type_checklists": {
+        "_說明": "以下 reference_checks 僅供參考，不代表完整檢查項目。必須根據規範文件進行全面檢查。",
+        "DTO 檔案 (*.dto.ts)": {
+          "reference_checks": [
+            "[ ] 必填欄位：是否使用 @ApiProperty + @IsNotEmpty + ! (type assertion)",
+            "[ ] 可選欄位：是否使用 @ApiPropertyOptional + @IsOptional + ? (optional)",
+            "[ ] 日期欄位：是否使用 @IsDate() + @Type(() => Date) + Date 型別",
+            "[ ] 關聯物件：是否使用嵌套物件 + @ValidateNested() + @Type()",
+            "[ ] 關聯物件命名：是否遵循 {Operation}{Parent}{Resource}Dto 格式",
+            "[ ] Enum 欄位：example 是否設為 null（除非有特定需求）",
+            "[ ] @ApiProperty/@ApiPropertyOptional 是否包含 description",
+            "[ ] 嵌套物件是否使用 @IsNotEmptyObject() + @IsObject()",
+            "[ ] ID 欄位是否使用 @IsInt() 而非 @IsPositive()"
+          ]
+        },
+        "Query DTO 檔案 (*-query.dto.ts)": {
+          "reference_checks": [
+            "[ ] 是否繼承 PaginationQueryDto（而非自行定義 page/limit）",
+            "[ ] 關鍵字搜尋是否使用通用的 keyword 欄位（而非特定欄位名稱）",
+            "[ ] 是否支援動態排序：有 orderBy 參數",
+            "[ ] ID 陣列篩選是否使用 @IntIdsQuery 裝飾器",
+            "[ ] 陣列參數是否使用複數形式（ids, propertyIds）",
+            "[ ] 日期欄位是否使用 @IsDate() + Date 型別（非 @IsISO8601 + string）"
+          ]
+        },
+        "Entity 檔案 (*.entity.ts)": {
+          "reference_checks": [
+            "[ ] 是否實作 Prisma Client 自動生成的 Interface",
+            "[ ] 所有公開屬性是否加上 @Expose()",
+            "[ ] 所有屬性是否加上 @ApiProperty 或 @ApiPropertyOptional",
+            "[ ] Nullable 欄位是否使用 @ApiPropertyOptional + type + nullable: true + 聯合型別",
+            "[ ] 關聯 Entity 是否使用 @Type(() => EntityClass) + @Expose()",
+            "[ ] 關聯 Entity 的 @ApiPropertyOptional type 是否使用函數形式 type: () => EntityClass",
+            "[ ] 屬性是否使用 ! 強制斷言",
+            "[ ] 類別是否有 @Exclude() 裝飾器",
+            "[ ] deletedAt 欄位不應加上 @Expose() 或 @ApiPropertyOptional（不應回傳給前端）"
+          ]
+        },
+        "Service 檔案 (*.service.ts)": {
+          "reference_checks": [
+            "[ ] 方法順序：Write（create/update/remove/softDelete）→ Read（findAll/findOne）→ Support Methods",
+            "[ ] 是否有 private readonly where = { deletedAt: null } 軟刪除過濾",
+            "[ ] 是否有 private readonly include 定義關聯",
+            "[ ] create/update 是否使用解構展開模式：const { ...data } = dto 再用 ...data 展開（參考規範 7.4 範例）",
+            "[ ] 關聯資源是否先驗證再關聯（使用 findOne 驗證）",
+            "[ ] 動態排序是否使用 $PrismaOrderByInput.queryOrderBy",
+            "[ ] 關鍵字搜尋是否使用 $PrismaWhereInput.whereKeywordInput",
+            "[ ] 日期範圍篩選是否使用 $PrismaSingleDateTimeWhereInput.singleDateTimeInput",
+            "[ ] 寫入操作是否使用 $transaction 包裝",
+            "[ ] 是否使用 catchPrismaErrorOrThrow 處理錯誤",
+            "[ ] 是否使用 plainToInstance 轉換回傳資料",
+            "[ ] findOrThrow 方法是否正確實作",
+            "[ ] ID 陣列篩選是否使用 ?.length 檢查",
+            "[ ] 邏輯錯誤檢查：變數名稱是否正確、ID 是否互換等",
+            "[ ] 🚨 依賴注入使用檢查：constructor 中注入的每個 service 是否都有被使用（搜尋 this.xxxService）",
+            "[ ] 🚨 方法呼叫檢查：每個 protected/private 方法是否都有被呼叫（搜尋 this.methodName）",
+            "[ ] 🚨 import 使用檢查：每個 import 的項目是否都有在檔案中被使用"
+          ]
+        },
+        "Controller 檔案 (*.controller.ts)": {
+          "reference_checks": [
+            "[ ] 方法順序：Write → Read",
+            "[ ] 是否使用 @ApiTags",
+            "[ ] 每個方法是否有 @ApiOperation",
+            "[ ] 每個方法是否有 @ApiOkResponse 或 @ApiDataListResponse",
+            "[ ] 路由參數是否使用 ParseIntPipe",
+            "[ ] 刪除操作是否使用 @HttpCode(HttpStatus.NO_CONTENT)",
+            "[ ] 是否透過 DataAggregator 處理 Service 回傳的資料",
+            "[ ] 是否有 // ********** 分隔 Write/Read 區塊",
+            "[ ] findAll 是否回傳 ResourceListEntity"
+          ]
+        },
+        "Data Aggregator 檔案 (*.data-aggregator.ts)": {
+          "reference_checks": [
+            "[ ] 是否有 toEntity 方法並支援多載",
+            "[ ] 是否有 aggregate 方法並支援多載",
+            "[ ] 是否使用 plainToInstance 轉換",
+            "[ ] 是否只負責資料聚合，不包含業務邏輯"
+          ]
+        },
+        "Interface 檔案 (*.interface.ts)": {
+          "reference_checks": [
+            "[ ] 是否有 export const entityName = 'EntityName'"
+          ]
+        },
+        "Module 檔案 (*.module.ts)": {
+          "reference_checks": [
+            "[ ] 是否正確註冊所有 providers（Service, DataAggregator）",
+            "[ ] 是否正確註冊 controllers",
+            "[ ] 是否正確 import 所需的模組",
+            "[ ] 是否有未使用的 import（引入但未實際使用的模組）",
+            "[ ] 🚨 imports 交叉驗證：每個 import 的模組，對應的 Service 是否真的有注入並使用其提供的服務"
+          ]
+        }
+      },
+      "common_checks": {
+        "_說明": "以下為所有檔案類型通用的參考檢查項目",
+        "reference_checks": [
+          "[ ] 註釋風格：使用 JSDoc /** */ 而非 ///",
+          "[ ] 命名規範：camelCase, PascalCase, kebab-case, SCREAMING_SNAKE_CASE",
+          "[ ] 格式化：2 空格縮排、單引號、分號、trailing comma",
+          "[ ] 是否有未使用的 import",
+          "[ ] 是否有 any 類型（應避免）"
+        ]
+      },
+      "cross_file_checks": {
+        "_說明": "🚨🚨🚨 跨檔案一致性檢查 - 這些檢查需要比對多個檔案，容易遺漏",
+        "reference_checks": [
+          "[ ] 🚨 Module ↔ Service 依賴一致性：Module imports 的模組 = Service 注入的依賴來源",
+          "[ ] 🚨 Service ↔ Controller 方法對應：Service 的公開方法應該都有被 Controller 使用",
+          "[ ] 🚨 Query DTO ↔ Service findAll 參數對應：Query DTO 的欄位應該都有在 findAll 中被處理",
+          "[ ] 🚨 Create DTO ↔ Entity 欄位對應：Create DTO 的欄位應該能對應到 Entity/Prisma Schema",
+          "[ ] 🚨 Entity ↔ Prisma Schema 對應：Entity 的欄位應該與 Prisma Schema 一致（透過 implements 檢查）",
+          "[ ] 🚨 DataAggregator ↔ Controller 使用：DataAggregator 的方法應該都有被 Controller 使用",
+          "[ ] 🚨 entityName 一致性：interface.ts 的 entityName 應該與模組用途一致"
+        ]
+      },
+      "logic_error_checks": {
+        "_說明": "🚨🚨🚨 邏輯錯誤檢查 - 這些是最嚴重的問題，必須仔細檢查",
+        "reference_checks": [
+          "[ ] 🚨 變數名稱混淆：多個相似變數時（如 propertyDto, monitoringCaseDto），確認沒有用錯",
+          "[ ] 🚨 ID 互換錯誤：connect 時使用的 ID 是否正確（如 property.id vs monitoringCase.id）",
+          "[ ] 🚨 條件判斷錯誤：if 條件是否正確，有沒有漏掉 else 情況",
+          "[ ] 🚨 null/undefined 處理：使用 ?? 或 || 時是否正確，會不會意外覆蓋資料",
+          "[ ] 🚨 陣列操作：.length 檢查是否正確，空陣列處理是否正確",
+          "[ ] 🚨 非同步操作：await 是否都有加，Promise 是否正確處理",
+          "[ ] 🚨 事務範圍：多個寫入操作是否都在同一個 $transaction 內"
+        ]
+      },
+      "security_checks": {
+        "_說明": "安全性檢查",
+        "reference_checks": [
+          "[ ] 敏感資料暴露：deletedAt、password 等欄位不應該暴露給前端",
+          "[ ] 關聯資源驗證：使用關聯資源前必須先驗證其存在（findOne）",
+          "[ ] 權限檢查：是否有適當的權限控制（如果適用）",
+          "[ ] 輸入驗證：所有使用者輸入是否都有經過驗證（DTO 驗證器）"
+        ]
+      },
+      "performance_checks": {
+        "_說明": "效能檢查",
+        "reference_checks": [
+          "[ ] N+1 查詢：是否有在迴圈中執行資料庫查詢",
+          "[ ] 不必要的 include：include 的關聯是否都有被使用",
+          "[ ] 分頁處理：大量資料查詢是否有分頁",
+          "[ ] 重複查詢：同一筆資料是否被重複查詢多次"
+        ]
+      },
+      "process": [
+        "1. 標記當前檔案為 in_progress（使用 TodoWrite）",
+        "2. 🚨 根據 Step 1 理解的規範文件內容，對檔案進行全面檢查",
+        "3. 參考 reference_checks 確保基本項目不遺漏（但不限於此清單）",
+        "4. 🚨 執行 Step 4.5 的依賴追蹤檢查（每個 import/注入/方法是否被使用）",
+        "5. 🚨 執行 cross_file_checks 跨檔案一致性檢查",
+        "6. 🚨 執行 logic_error_checks 邏輯錯誤檢查",
+        "7. 🚨 執行 security_checks 安全性檢查",
+        "8. 🚨 執行 performance_checks 效能檢查",
+        "9. 每個問題都要明確指出：違反了規範文件的哪個規則",
+        "10. 為每個問題標註嚴重度（高/中/低）並記錄行號",
+        "11. 完成後標記檔案為 completed",
+        "12. 移至下一個檔案"
+      ]
+    },
+    {
+      "name": "Step 6: 完成度驗證",
+      "description": "🚨 關鍵步驟：確認所有檔案都已完成檢查",
+      "actions": [
+        "檢查 TodoWrite 清單，確認所有檔案都是 completed 狀態",
+        "如果有任何檔案未完成，必須回到 Step 5 繼續檢查",
+        "統計：已檢查檔案數 / 總檔案數"
+      ]
+    },
+    {
+      "name": "Step 7: 產生 Review 報告",
+      "description": "整理所有發現的問題，按嚴重度分類產生結構化報告，並存檔至 docs/report/code-review/{模組名稱} 目錄",
+      "output": {
+        "directory": "docs/report/code-review/{模組名稱}",
+        "filename_format": "code-review-{模組名稱}-{YYYY-MM-DD}.md",
+        "example": "code-review-plan-2025-12-02.md"
+      },
+      "report_template": {
+        "_說明": "以下為報告的完整 Markdown 模板結構，請嚴格遵循此格式產生報告",
+        "structure": [
+          {
+            "section": "標題區",
+            "format": "# Code Review 報告 - {模組名稱} 模組\n\n> **檢查日期**：{YYYY-MM-DD}\n> **檢查檔案數**：{已檢查}/{總數}\n> **問題總數**：{總問題數} 個\n\n---"
+          },
+          {
+            "section": "問題統計",
+            "format": "## 問題統計\n\n| 嚴重度 | 數量 | 說明 |\n|:------:|:----:|------|\n| 🚨 高 | {N} | 會導致系統錯誤、資料不一致的問題 |\n| ⚠️ 中 | {N} | 違反專案開發規範 |\n| 💡 低 | {N} | 建議改善的項目 |\n\n---"
+          },
+          {
+            "section": "高嚴重度問題",
+            "title": "## 🚨 高嚴重度（必須立即修復）",
+            "item_format": {
+              "header": "### {序號}. {問題標題}",
+              "content": [
+                "**檔案**：`{相對路徑}`",
+                "",
+                "**問題描述**：",
+                "{詳細說明問題的原因和影響}",
+                "",
+                "**影響範圍**：",
+                "- 第 {行號} 行：{欄位/變數名稱}",
+                "",
+                "**問題程式碼**：",
+                "",
+                "```typescript",
+                "// ❌ 錯誤：{錯誤說明}",
+                "{問題程式碼片段}",
+                "```",
+                "",
+                "**修復方式**：",
+                "",
+                "```typescript",
+                "// ✅ 正確：{正確說明}",
+                "{修復後程式碼片段}",
+                "```",
+                "",
+                "**修復步驟**：",
+                "",
+                "1. 開啟 `{檔案路徑}`",
+                "2. 找到第 {行號} 行",
+                "3. {具體修改指示}",
+                "",
+                "---"
+              ]
+            }
+          },
+          {
+            "section": "中嚴重度問題",
+            "title": "## ⚠️ 中嚴重度（違反規範）",
+            "item_format": {
+              "header": "### {序號}. {問題標題}",
+              "content": [
+                "**檔案**：`{相對路徑}`",
+                "**行號**：第 {行號} 行",
+                "",
+                "**違反規範**：",
+                "根據 `{規範文件}` 第 {章節} 節，{規範內容}",
+                "",
+                "**問題程式碼**：",
+                "",
+                "```typescript",
+                "// ❌ 錯誤：{錯誤說明}",
+                "{問題程式碼片段}",
+                "```",
+                "",
+                "**修復方式**：",
+                "",
+                "```typescript",
+                "// ✅ 正確：{正確說明}",
+                "{修復後程式碼片段}",
+                "```",
+                "",
+                "**修復步驟**：",
+                "",
+                "1. {步驟1}",
+                "2. {步驟2}",
+                "",
+                "---"
+              ]
+            }
+          },
+          {
+            "section": "低嚴重度問題",
+            "title": "## 💡 低嚴重度（建議改善）",
+            "item_format": {
+              "header": "### {序號}. {問題標題}",
+              "content": [
+                "**檔案**：`{相對路徑}`",
+                "**行號**：第 {行號} 行",
+                "",
+                "**問題**：{簡述問題}",
+                "",
+                "**修復**：",
+                "```typescript",
+                "// 修改前",
+                "{原始程式碼}",
+                "",
+                "// 修改後",
+                "{修復程式碼}",
+                "```",
+                "",
+                "---"
+              ]
+            }
+          },
+          {
+            "section": "逐檔案檢查結果",
+            "title": "## 逐檔案檢查結果",
+            "format": "| 檔案 | 狀態 | 高 | 中 | 低 |\n|:-----|:----:|:--:|:--:|:--:|\n| `{檔案路徑}` | ✅/❌ | {N} | {N} | {N} |"
+          },
+          {
+            "section": "符合規範的部分",
+            "title": "## 符合規範的部分",
+            "description": "以下項目經檢查符合專案開發規範：",
+            "format": {
+              "category_header": "### {檔案類型}",
+              "item": "- ✅ {符合的規範項目}"
+            }
+          }
+        ]
+      },
+      "report_example": {
+        "_說明": "以下為實際報告範例，供參考",
+        "reference": "docs/report/code-review/plan/code-review-plan-2025-12-02.md"
+      }
     }
   ],
-  "notes": [
-    "此工作流程可用於任何模組的 code review",
-    "檢查項目基於 docs/code-style-guide.md 的規範",
-    "報告應該清晰、具體，並提供可行的修復建議",
-    "對於嚴重錯誤，應該標註為 🚨 以引起注意",
-    "對於符合規範的部分，也應該給予正面回饋"
+  "workflow_principles": [
+    "🔴 資深工程師心態：以資深工程師和架構師的角度審視程式碼，謹慎細心，不放過任何細節",
+    "🔴 規範文件優先：規範文件（docs/）是權威來源，本工作流程的 reference_checks 只是參考提醒",
+    "🔴 範例是法律：規範文件中的範例程式碼是唯一正確寫法，任何不同寫法都是違規",
+    "🔴 深入理解：不能只機械式比對範例，必須理解每個模式的【目的和原因】",
+    "🔴 發現衍生問題：理解範例目的後，才能發現違規寫法可能造成的衍生問題",
+    "🔴 先問 Why：看到問題先問「為什麼會這樣」，才能正確判斷問題本質和嚴重度",
+    "🔴 全面檢查：即使 reference_checks 沒有列出，只要違反規範文件的規則就必須指出",
+    "🔴 追蹤依賴：每個 import、依賴注入、方法都要追蹤是否被使用，不要假設存在就是有用的",
+    "🔴 跨檔案驗證：不只看單一檔案，要交叉驗證 Module、Service、Controller 之間的一致性",
+    "系統化：使用 TodoWrite 追蹤所有檔案和檢查項目",
+    "完整性：必須檢查所有檔案，不可遺漏",
+    "具體性：每個問題都要有檔案名稱、行號、嚴重度、具體描述",
+    "可追溯：報告要包含逐檔案的檢查結果",
+    "一次完成：透過完成度驗證確保一次就檢查完全",
+    "完整修復：每個問題的修復建議必須包含所有連鎖修改，讓使用者一次就能完成修復",
+    "預見效應：提出修復建議前，必須分析修復後會產生的連鎖效應（unused imports、orphan variables 等）"
+  ],
+  "anti_patterns": [
+    "❌ 不要只依賴 reference_checks 清單：這只是參考，必須根據規範文件全面檢查",
+    "❌ 不要機械式比對範例：必須理解範例的【目的和原因】，才能發現衍生問題",
+    "❌ 不要看到「沒使用」就建議刪除：先問「為什麼會有這個」，可能是應該使用但沒用",
+    "❌ 不要只看表面問題：必須分析違規會造成的後果，據此調整嚴重度",
+    "❌ 不要遺漏規範文件有提到但 reference_checks 沒列出的規則",
+    "❌ 不要批量跳過檔案",
+    "❌ 不要在讀取階段就開始 review（容易遺漏）",
+    "❌ 不要只檢查部分檔案類型",
+    "❌ 不要忘記更新 TodoWrite 狀態",
+    "❌ 不要產生沒有行號的問題報告",
+    "❌ 不要忘記為問題標註嚴重度",
+    "❌ 不要提供不完整的修復建議（必須包含連鎖修改）",
+    "❌ 不要忽略移除程式碼後產生的 unused imports/variables",
+    "❌ 不要讓使用者需要執行多次 Code Review 才能發現所有問題",
+    "❌ 不要把「違反規範」歸類為「建議改善」：與範例不同就是違規，嚴重度至少是中",
+    "❌ 不要只看方法存在就跳過：必須追蹤每個方法是否真的被呼叫",
+    "❌ 不要只看 constructor 有注入就跳過：必須追蹤每個依賴是否真的被使用",
+    "❌ 不要只檢查單一檔案：必須交叉驗證 Module 和 Service 的依賴關係",
+    "❌ 不要跳過 Step 4.5（依賴關係圖）：這是最常遺漏問題的地方",
+    "❌ 不要假設程式碼存在就是有用的：每個 import、注入、方法都要驗證使用情況"
   ]
 }
